@@ -6,7 +6,7 @@
 @mixin status {
     color: white;
     border-radius: 40px;
-    padding: 1px 6px;
+   padding: 3px 6px;
     font-size: 13px;
 }
 
@@ -102,7 +102,7 @@ $lightcyan : hsl(180, 52%, 96%);
             margin-top: 22px;
             @media (max-width: 768px) {
                 display: block;
-                width: 94%;
+                width: 95%;
                 margin-top: 4.5rem;
                 padding-right: 10px;
             }
@@ -128,18 +128,20 @@ $lightcyan : hsl(180, 52%, 96%);
                     line-height: 5px;
                     padding-left: 10px;
                     @media (max-width: 768px) {
-                        padding-left: 4px;
+                        max-width: 100%;
 
                      }
-
                     .name {
                         color: hsl(180, 29%, 50%);
                         font-weight: 700;
                         font-size: 15px;
                         padding-right: 8px;
+                        
+                        
 
                         @media (max-width: 768px) {
-                            padding-right: 17px;
+                            padding-right: 18px;
+                           
                             
                          }
                     }
@@ -147,6 +149,7 @@ $lightcyan : hsl(180, 52%, 96%);
                     .new {
                         background-color: hsl(180, 29%, 50%);
                         @include status;
+                        
                     }
 
                     .featured {
@@ -155,7 +158,7 @@ $lightcyan : hsl(180, 52%, 96%);
                         margin-left: 7px;
 
                         @media (max-width: 768px) {
-                            margin-left: 18px;
+                            margin-left: 15px;
                          }
                     }
 

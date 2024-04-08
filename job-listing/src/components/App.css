@@ -82,7 +82,7 @@
 @media (max-width: 768px) {
   .App main .box {
     display: block;
-    width: 94%;
+    width: 95%;
     margin-top: 4.5rem;
     padding-right: 10px;
   }
@@ -112,7 +112,7 @@
 }
 @media (max-width: 768px) {
   .App main .box .flex .text {
-    padding-left: 4px;
+    max-width: 100%;
   }
 }
 .App main .box .flex .text .name {
@@ -123,27 +123,27 @@
 }
 @media (max-width: 768px) {
   .App main .box .flex .text .name {
-    padding-right: 17px;
+    padding-right: 18px;
   }
 }
 .App main .box .flex .text .new {
   background-color: hsl(180, 29%, 50%);
   color: white;
   border-radius: 40px;
-  padding: 1px 6px;
+  padding: 3px 6px;
   font-size: 13px;
 }
 .App main .box .flex .text .featured {
   color: white;
   border-radius: 40px;
-  padding: 1px 6px;
+  padding: 3px 6px;
   font-size: 13px;
   background-color: hsl(180, 14%, 20%);
   margin-left: 7px;
 }
 @media (max-width: 768px) {
   .App main .box .flex .text .featured {
-    margin-left: 18px;
+    margin-left: 15px;
   }
 }
 .App main .box .flex .text h4 {
