@@ -102,8 +102,9 @@ $lightcyan : hsl(180, 52%, 96%);
             margin-top: 22px;
             @media (max-width: 768px) {
                 display: block;
-                width: 88%;
+                width: 94%;
                 margin-top: 4.5rem;
+                padding-right: 10px;
             }
 
       
@@ -126,7 +127,10 @@ $lightcyan : hsl(180, 52%, 96%);
                 .text {
                     line-height: 5px;
                     padding-left: 10px;
+                    @media (max-width: 768px) {
+                        padding-left: 4px;
 
+                     }
 
                     .name {
                         color: hsl(180, 29%, 50%);
@@ -135,7 +139,8 @@ $lightcyan : hsl(180, 52%, 96%);
                         padding-right: 8px;
 
                         @media (max-width: 768px) {
-                            padding-right: 20px;
+                            padding-right: 17px;
+                            
                          }
                     }
 
