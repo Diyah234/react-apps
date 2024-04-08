@@ -10,14 +10,7 @@ import data from '../data';
 
 
 function App() {
-  //const [mode, setMode] = useState(false)
-  // const mobile = window.matchMedia('(max-width: 475px)');
-  //  let modeMobile;
-  //  if (mobile.matches) {
-  //   modeMobile = `url(${headerMobile})`;
-  //  }else{
-  //   modeMobile = `url(${headerDesktop})`;
-  //  }
+ 
   const [showBox, setShowBox] = useState(false)
   const [selectedItems , setSelectedItems] = useState([])
   const [filter, setFilter] = useState(data)
@@ -77,7 +70,7 @@ function App() {
 
         return (
  
-          <section>
+          <section key={index}>
           <Container
           key= {index}
       image = {item.logo}
