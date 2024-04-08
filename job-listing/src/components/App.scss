@@ -127,8 +127,9 @@ $lightcyan : hsl(180, 52%, 96%);
                 .text {
                     line-height: 5px;
                     padding-left: 10px;
+                    padding-top: 10px;
                     @media (max-width: 768px) {
-                        max-width: 100%;
+                        padding-top: 14px;
 
                      }
                     .name {
