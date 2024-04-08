@@ -1,0 +1,231 @@
+@mixin flex {
+    display: flex;
+    flex-direction: row;
+}
+
+@mixin status {
+    color: white;
+    border-radius: 40px;
+    padding: 1px 6px;
+    font-size: 13px;
+}
+
+@mixin box {
+    width: 80%;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 1px 8px 8px hsl(180, 31%, 85%);
+}
+
+$darkcyan: hsl(180, 29%, 50%);
+$lightcyan : hsl(180, 52%, 96%);
+
+.App {
+    overflow-x: hidden;
+   
+
+    .bg {
+        background-color: $darkcyan;
+    }
+
+    main {
+        background-color: $lightcyan;
+        // padding: 2rem 10rem 20rem;
+        padding: 2rem 1rem;
+        height: 260vh;
+
+        .show {
+            display: block;
+            padding: 1.2rem 1.2rem 1.2rem 7px;
+            @include flex;
+            justify-content: space-between;
+            align-items: center;
+            @include box;
+            position: relative;
+            top: -60px;
+            z-index: 10;
+            margin-bottom: -2.2rem;
+
+            p{
+                color: $darkcyan;
+                font-weight: 700;
+
+                &:hover{
+                    cursor: pointer;
+                    text-decoration: underline;
+                    text-decoration-color: $darkcyan;
+                    text-decoration-thickness: 2px;
+                }
+            }
+            .features{
+                @include flex;
+            }
+        }
+
+        .details {
+            background-color: $lightcyan;
+            color: $darkcyan;
+            padding: 4px 11px;
+            font-weight: 700;
+            margin-left: 1.2rem;
+        }
+
+        .close {
+            background-color: $darkcyan;
+            padding: 4px 6px;
+            &:hover{
+                cursor: pointer;
+                background-color: black;
+
+                @media (max-width: 768px) {
+                        cursor: pointer;
+                        background-color: black;
+                    
+                 }
+            }
+            
+        }
+
+        .hide {
+            display: none
+        }
+        .border{
+            border-left: 5px solid $darkcyan;
+            
+        }
+        .box {
+            @include flex;
+            justify-content: space-between;
+            @include box;
+            padding: 1rem;
+            margin-top: 22px;
+            @media (max-width: 768px) {
+                display: block;
+                width: 88%;
+                margin-top: 4.5rem;
+            }
+
+      
+            .flex {
+                @include flex;
+                @media (max-width: 768px) {
+                    display: block;
+                }
+
+                .roundImage img {
+                    width: 96%;
+                    margin-top: 7px;
+
+                    @media (max-width: 768px) {
+                        width: 26%;
+                        margin-top: -60px;
+                    }
+                }
+
+                .text {
+                    line-height: 5px;
+                    padding-left: 10px;
+
+
+                    .name {
+                        color: hsl(180, 29%, 50%);
+                        font-weight: 700;
+                        font-size: 15px;
+                        padding-right: 8px;
+
+                        @media (max-width: 768px) {
+                            padding-right: 20px;
+                         }
+                    }
+
+                    .new {
+                        background-color: hsl(180, 29%, 50%);
+                        @include status;
+                    }
+
+                    .featured {
+                        @include status;
+                        background-color: hsl(180, 14%, 20%);
+                        margin-left: 7px;
+
+                        @media (max-width: 768px) {
+                            margin-left: 18px;
+                         }
+                    }
+
+                    h4 {
+                        font-size: 17px;
+                        color: hsl(180, 14%, 20%);
+                        &:hover{
+                            color: $darkcyan;
+                            cursor: pointer;
+                        }
+                    }
+
+                    .flex{
+                        @media (max-width: 768px) {
+                            border-bottom: 1.5px solid hsl(180, 8%, 52%);
+                            padding-bottom: 30px;
+                            padding-top: 5px;
+                         }
+                    
+                    .date {
+                        font-size: 15px;
+                        color: hsl(180, 8%, 52%);
+                        font-weight: 500;
+                    }
+
+                    .dot {
+                        margin-top: -5px;
+                        font-size: 20px;
+                        font-weight: 500;
+                        padding: 0 8px;
+                        color: hsl(180, 8%, 52%);
+                    }
+                }
+                }
+            }
+
+            .properties {
+                @include flex;
+                justify-content: center;
+                align-items: center;
+
+                @media (max-width: 768px) {
+                    padding: 10px 0;
+                    display: grid;
+                    grid-template-columns: repeat(3,1fr);
+                 }
+
+                >div {
+                    color: $darkcyan;
+                    background-color: $lightcyan;
+                    margin-left: 7px;
+                    font-size: 15px;
+                    border-radius: 4px;
+                    padding: 5px 10px;
+                    font-weight: 700;
+
+                    @media (max-width: 768px) {
+                        margin-left: 15px;
+                        margin-top: 13px;
+                     }
+
+                    &:not(:last-child) {
+                        margin-right: 7px; // Add margin to separate items
+                    }
+                    &:hover{
+                        cursor: pointer;
+                        background-color: $darkcyan;
+                        color: white;
+
+                    }
+                    
+                }
+                
+            }
+        }
+    }
+}
+
