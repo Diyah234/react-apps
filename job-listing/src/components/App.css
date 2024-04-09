@@ -26,6 +26,11 @@
   z-index: 10;
   margin-bottom: -2.2rem;
 }
+@media (max-width: 768px) {
+  .App main .show {
+    width: 92%;
+  }
+}
 .App main .show p {
   color: hsl(180, 29%, 50%);
   font-weight: 700;
@@ -39,6 +44,12 @@
 .App main .show .features {
   display: flex;
   flex-direction: row;
+}
+@media (max-width: 768px) {
+  .App main .show .features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 .App main .details {
   background-color: hsl(180, 52%, 96%);

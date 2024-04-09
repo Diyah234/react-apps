@@ -48,6 +48,11 @@ $lightcyan : hsl(180, 52%, 96%);
             top: -60px;
             z-index: 10;
             margin-bottom: -2.2rem;
+            @media (max-width: 768px) {
+               
+                width: 92%;
+            
+         }
 
             p{
                 color: $darkcyan;
@@ -62,6 +67,12 @@ $lightcyan : hsl(180, 52%, 96%);
             }
             .features{
                 @include flex;
+                @media (max-width: 768px) {
+                    display: grid;
+                    grid-template-columns: repeat(2,1fr);
+                
+             }
+                
             }
         }
 
@@ -71,6 +82,8 @@ $lightcyan : hsl(180, 52%, 96%);
             padding: 4px 11px;
             font-weight: 700;
             margin-left: 1.2rem;
+
+            
         }
 
         .close {
