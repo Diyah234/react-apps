@@ -33,11 +33,11 @@ export default function Container(props){
       <div className='flex'>
         <div className='roundImage'><img src= {logoSrc}/></div>
         <div className="text">
-
-          
-            <span className='name'>{props.company}</span>
-            {props.new && <span className="new">{props.new}!</span>}
-            {props.featured && <span className="featured">{props.featured}</span>}
+          <div className='position'>
+          <div className='name'><p>{props.company}</p></div>
+            {props.new && <div className="new"><p>{props.new}!</p></div>}
+            {props.featured && <div className="featured"><p>{props.featured}</p></div>}
+          </div>
             
           <h4>{props.position}</h4>
           <div className="flex"> <span className="date">{props.postedAt}</span><span className="dot">.</span><span className="date">{props.contract}</span><span className="dot">.</span><span className="date">{props.location}</span></div>

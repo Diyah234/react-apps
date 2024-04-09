@@ -6,7 +6,9 @@
 @mixin status {
     color: white;
     border-radius: 40px;
-   padding: 3px 6px;
+    padding: 8px 6px;
+   
+    
     font-size: 13px;
 }
 
@@ -127,45 +129,57 @@ $lightcyan : hsl(180, 52%, 96%);
                 .text {
                     line-height: 5px;
                     padding-left: 10px;
-                    padding-top: 10px;
+                    margin-top: -3px;
                     @media (max-width: 768px) {
-                        padding-top: 14px;
+                        padding-top: 17px;
 
                      }
+                     .position{
+                        @include flex;
+                        align-items: center;
+                        max-width: 100%;
+                    
                     .name {
-                        color: hsl(180, 29%, 50%);
+                        p{
+  
+                      color: hsl(180, 29%, 50%);
                         font-weight: 700;
                         font-size: 15px;
                         padding-right: 8px;
-                        
-                        
+                        }
 
-                        @media (max-width: 768px) {
-                            padding-right: 18px;
+                        // @media (max-width: 768px) {
+                        //     padding-right: 18px;
                            
                             
-                         }
+                        //  }
                     }
 
                     .new {
+                        p{
                         background-color: hsl(180, 29%, 50%);
                         @include status;
-                        
+                    }
                     }
 
                     .featured {
+                        p{
                         @include status;
                         background-color: hsl(180, 14%, 20%);
                         margin-left: 7px;
-
-                        @media (max-width: 768px) {
-                            margin-left: 15px;
-                         }
                     }
+
+                        // @media (max-width: 768px) {
+                        //     margin-left: 15px;
+                        //  }
+                    }
+                }
 
                     h4 {
                         font-size: 17px;
                         color: hsl(180, 14%, 20%);
+                        margin-top: 2px;
+                        
                         &:hover{
                             color: $darkcyan;
                             cursor: pointer;
