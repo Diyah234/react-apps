@@ -40,6 +40,7 @@ function App() {
   }
   function hide(){
     setShowBox(false)
+    setSelectedItems([])
   }
   function del(index) {
     const updatedItems = [...selectedItems];
