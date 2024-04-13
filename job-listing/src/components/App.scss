@@ -49,8 +49,7 @@ $lightcyan : hsl(180, 52%, 96%);
             z-index: 10;
             margin-bottom: -2.2rem;
             @media (max-width: 768px) {
-               
-                width: 92%;
+                 width: 92%;
             
          }
 
@@ -67,6 +66,14 @@ $lightcyan : hsl(180, 52%, 96%);
             }
             .features{
                 @include flex;
+
+                .features-flex{
+                    @include flex;
+
+                    div{
+                        margin-bottom: 15px;
+                    }
+                }
                 @media (max-width: 768px) {
                     display: grid;
                     grid-template-columns: repeat(2,1fr);

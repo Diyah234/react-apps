@@ -56,9 +56,11 @@ function App() {
       <div className='bg'><img src={window.innerWidth > 1024 ? headerDesktop : headerMobile}/></div>
       <main>
         <div className={showBox ? 'show' : 'hide'}>
-          <div className='features'>{selectedItems && selectedItems.map((item, index) =><div key={index}>
-           <span className='details'>{item}</span>
-          <span className='close' onClick={  () => del(index)}><img src={close} /></span> </div>)} </div>
+          <div className='features'>
+          {selectedItems && selectedItems.map((item, index) =>
+          <div key={index} className='features-flex'>
+           <div className='details'>{item}</div>
+          <div className='close' onClick={  () => del(index)}><img src={close} /></div> </div>)} </div>
           <div><p onClick={hide}>Clear</p></div></div>
  
  
