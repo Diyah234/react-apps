@@ -1,0 +1,401 @@
+@import url('https://fonts.googleapis.com/css2?family=Inika:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+body{
+  font-family: "Inika", serif;
+  overflow-x: hidden;
+}
+.home{
+  background-image: url('./images/MAIN\ BG.png');
+  background-repeat: no-repeat;
+  padding: 0 5px;
+  margin-bottom: -4rem;
+}
+.myNav{
+  margin-top: -1rem;
+  margin-bottom: -3rem;
+  padding-right: 6rem;
+
+}
+.lists{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  list-style: none;
+}
+.lists li{
+  padding: 0 12px;
+}
+.items{
+  background-color: #523728;
+  padding: 1px 10px 1px 0;
+  border-radius: 10px;
+}
+.items a{
+  color: white;
+}
+.actives{
+  background-color: white;
+  border-radius: 7px;
+ 
+}
+.actives a{
+  color: #523728;
+}
+.signup{
+  border: 2px solid #523728;
+  color: #523728;
+  background-color: transparent;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.home-text{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: -10rem;
+  padding-left: 3rem;
+  padding-right: 2rem;
+ 
+}
+.home-title{
+    color: #523728;
+    font-weight: 400;
+    margin-right: -10rem;
+}
+.home-title h1{
+  font-size: 69px;
+  width: 100%;
+}
+.home-title p{
+  width: 60%;
+  margin-top: 1.2rem;
+  font-size: 18px;
+}
+.cake{
+  
+   width: 55%;
+}
+.button{
+  background-color: #6A4028;
+  color: white;
+  padding: 9px 22px;
+  border-radius: 30px;
+  border: none;
+  font-weight: 600;
+  margin-top: 10px;
+}
+.demo{
+  background-color: transparent;
+  color: #6A4028;
+  padding: 9px 15px;
+  border-radius: 30px;
+  border: 1px solid #6A4028;
+  font-weight: 600;
+  margin-left: 10px;
+  margin-top: 10px;
+}
+.demo img{
+  margin-right: 5px;
+  margin-top: -4px;
+}
+
+/* about us */
+.about{
+  padding: 2rem 10rem 2rem 3rem;
+  background-color: #FFF8E1;
+}
+.about-text{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.about-image{
+  margin-top: -6.7rem;
+}
+.about-image img{
+  width: 87%;
+}
+.about h2{
+  font-weight: 400;
+  font-size: 50px;
+}
+.about-big{
+  font-size: 20px;
+}
+.about-small{
+  font-size: 15px;
+}
+
+/* Menu */
+.menu{
+  padding: 4.2rem 4rem 7rem;
+  background-color: #6A4028E5;
+}
+.menus{
+  padding: 4.2rem 4rem 1rem;
+  background-color: #6A4028E5;
+}
+.menu h1 , .menus h1{
+  color: #FFF8E1;
+  text-align: center;
+  font-size: 64px;
+}
+.menu .menu-box{
+  background-color: #FFF8E1;
+  border-radius: 40px;
+  padding:  26px 20px;
+  width: 28%;
+  margin-left: 3rem;
+  margin-top: 1.5rem;
+}
+.menus .menu-box{
+  background-color: #FFF8E1;
+  border-radius: 40px;
+  padding:  26px 20px;
+  width: 28%;
+  margin-left: 3rem;
+}
+
+.menu-last{
+  padding-bottom: 10rem;
+}
+.menu-img{
+  text-align: center;
+  padding-top: 1rem;
+}
+.blueberry{
+  width: 60%;
+}
+.biscoff{
+  width: 70%;
+}
+.chocolate{
+  width: 65%;
+}
+.menu h3 , .menus h3{
+  color: #1D2729;
+  font-size: 22px;
+  font-weight: 700;
+  padding-top: 2rem;
+}
+.menu p , .menus p{
+  color: #555555;
+  font-size: 13px;
+  margin-top: -5px;
+}
+.menu-text{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.dollar{
+  color: #53A623;
+  font-weight: 700;
+  font-size: 15px;
+}
+.price {
+  color: #523728;
+  font-weight: 700;
+  font-size: 18px;
+}
+.view {
+  float: right;
+  color: #FFF8E1;
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+
+}
+.link{
+  font-size: 22px;
+  font-weight: 500;
+  margin-right: 13px;
+  color: #FFF8E1;
+  text-decoration: none;
+}
+.link:hover{
+  text-decoration: underline;
+}
+
+/* blog */
+.blog{
+  background-color: #FFF8E1;
+  padding: 4rem 4rem;
+}
+.blog h1{
+  text-align: center;
+  color: #734B33;
+  font-size: 64px;
+  font-weight: 400;
+}
+.recent{
+   color: #734B33;
+   font-size: 22px;
+   text-align: center;
+   font-weight: 400;
+}
+.blog-box{
+  background-color: #FFF8E1;
+  padding: 25px 30px;
+  border-radius: 20px;
+  box-shadow: -2px -9px 42px 0px #4D422C61;
+  margin-left: 3rem;
+  margin-right: 1rem;
+  width: 27%;
+  margin-top: 2rem;
+}
+.blog-box:hover , .menu-box:hover{
+  cursor: pointer;
+  transform: scale(1.1);
+}
+.blog-img{
+  border-radius: 20px;
+}
+.blog-img img{
+  width: 100%;
+}
+.blog h5{
+  color: #BB6939;
+  font-size: 18px;
+  font-weight: 500;
+  padding-top: 1.5rem;
+}
+.blog h4{
+  color: #734B33;
+  font-size: 22px;
+  font-weight: 600;
+  padding-bottom: 6px;
+}
+.blog-text{
+  font-size: 12.5px;
+  color: #704B33;
+  font-weight: 400;
+  line-height: 18.75px;
+}
+.read-more{
+  color: #734B33;
+  font-size: 15px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+}
+.read2{
+  margin-top: 3rem;
+}
+
+/*contact us */
+.contact{
+  background-color: #6A4028F0;
+  padding: 4rem 0;
+  padding-left: 7rem;
+}
+
+.contact h2{
+  color: #FFF8E1;
+  font-size: 64px;
+  font-weight: 400;
+}
+.contact-word{
+  color: #FFF8E1;
+  font-size: 18px;
+  width: 80%;
+}
+.icons{
+  margin-top: 2rem;
+}
+.fontawesome{
+  margin-left: 1.5rem;
+}
+.fontawesome:hover{
+  cursor: pointer;
+}
+.copyright{
+  color: #FFF8E1;
+  margin-top: 2rem;
+  font-size: 18px;
+  font-weight: 500;
+}
+.contact input , textarea{
+  border-radius: 20px;
+  padding: 10px 15px;
+  width: 60%;
+  border: none;
+  background-color: #FCF9F4;
+  margin-top: 1.3rem;
+  box-shadow: 0px 4px 4px 0px #00000042;
+}
+.contact input::placeholder , textarea::placeholder{
+  color: #757575;
+  font-size: 15px;
+}
+.contact button{
+  background-color: #FCAE36;
+  border:  none;
+  border-radius: 30px;
+  padding: 15px 20px;
+  width: 60%;
+  margin-top: 1.3rem;
+}
+.form{
+  margin-top: 4rem;
+}
+
+
+@media screen and (max-width: 768px) {
+  body{
+    overflow-x: hidden;
+  }
+  .signup{
+    display: none;
+  }
+  .home{
+    padding: 1rem 0;
+  
+  }
+  .myNav{
+    padding: 0;
+    margin-top: -2rem;
+  }
+  .myToggle{
+    margin-left: 5rem;
+  }
+  .home-text{
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 1rem;
+  }
+  .home-title{
+    margin-top: 8rem;
+  }
+  .cake img{
+    width: 21rem;
+    margin-left: -3rem;
+    margin-top: -3.5rem;
+    
+  }
+  .home h1{
+    font-size: 48px;
+    width: 80%;
+  }
+  .menu h1 , .menus h1{
+    font-size: 50px;
+  }
+  .menu-box , .menus .menu-box{
+    width: 100%;
+    margin: 0 auto;
+    margin-bottom: 2rem;
+    margin-top: 10px;
+  }
+  .blog-box{
+    width: 100%;
+    margin: 0 auto;
+    margin-top: 3rem;
+  }
+  .contact{
+    padding: 1rem;
+  }
+  .contact input , textarea, .contact button{
+    width: 90%;
+  }
+}
