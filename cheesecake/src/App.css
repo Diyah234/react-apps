@@ -4,6 +4,9 @@ body{
   font-family: "Inika", serif;
   overflow-x: hidden;
 }
+.App{
+  overflow-x: hidden;
+}
 .home{
   background-image: url('./images/MAIN\ BG.png');
   background-repeat: no-repeat;
@@ -343,7 +346,7 @@ body{
 
 
 @media screen and (max-width: 768px) {
-  body{
+  .App{
     overflow-x: hidden;
   }
   .signup{
