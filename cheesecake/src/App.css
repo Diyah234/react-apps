@@ -25,6 +25,9 @@ body{
   justify-content: center;
   list-style: none;
 }
+.lists li:hover{
+  cursor: pointer;
+}
 .lists li{
   padding: 0 12px;
 }
