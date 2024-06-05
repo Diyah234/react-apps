@@ -127,6 +127,9 @@ $grey : hsl(231, 11%, 63%);
             &:hover{
                 cursor: pointer;
             }
+            @media screen and (max-width: 768px) and (min-width: 376px) {
+                font-size: 17px;
+            }
         }
         @media screen and (max-width: 768px) and (min-width: 376px) {
             background-color: white;
@@ -135,7 +138,7 @@ $grey : hsl(231, 11%, 63%);
             left: 0;
             right: 0;
             padding: 1rem 4rem 1rem 3rem;
-            
+            font-size: 17px;
          }
          @media screen and (max-width: 375px) {
             background-color: white;

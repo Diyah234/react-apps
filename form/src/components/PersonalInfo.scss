@@ -36,6 +36,13 @@ form{
             border-radius: 6px;
             border: 1.5px solid hsl(230, 11%, 89%);
             padding: 10px;
+
+            @media screen and (max-width: 768px) and (min-width: 376px) {
+                font-size: 16px;
+            }
+        }
+        @media screen and (max-width: 768px) and (min-width: 376px) {
+            font-size: 19px;
         }
     
     }
@@ -77,7 +84,7 @@ form{
         }
         @media screen and (max-width: 768px) {
             width: 35%;
-            font-size: 16px;
+            font-size: 18px;
             margin-top: -1rem;
             
         }

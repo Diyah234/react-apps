@@ -114,6 +114,12 @@ $grey : hsl(231, 11%, 63%);
             &:hover{
                 cursor: pointer;
             }
+            @media screen and (max-width: 768px) and (min-width: 376px) {
+                font-size: 17px;
+            }
+        }
+        @media screen and (max-width: 768px) and (min-width: 376px) {
+            font-size: 17px;
         }
     }
 }
