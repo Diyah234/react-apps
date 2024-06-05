@@ -23,7 +23,10 @@ function AddOns() {
   }
   const handleNextStep = () => {
     emptyChecked();
-    setActiveStep('4');
+    if (activeLink.length> 0) {
+      setActiveStep('4');
+    }
+    
   };
 
   return (
