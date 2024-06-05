@@ -1,0 +1,149 @@
+$purple:  hsl(213, 96%, 18%);
+$grey : hsl(231, 11%, 63%);
+@mixin flex {
+    display: flex;
+    flex-direction: row;
+}
+.planselect{
+    
+    @media screen and (max-width: 768px) {
+        
+        padding-bottom: 4rem;
+    }
+    width: 90%;
+    h1{
+        font-size: 40px;
+        color: $purple;
+    }
+    .text{
+        color: $grey;
+        margin-top: -1.7rem;
+        font-weight: 500;
+    }
+    .flexBox{
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 20px;
+        margin-top: 2.5rem;
+        @media screen and (max-width: 768px) {
+            grid-template-columns: repeat(1,1fr);
+        }
+        
+
+        .box{
+            border: 1.5px solid hsl(230, 11%, 89%);
+            padding: 20px 15px 0;
+            border-radius: 8px;
+            
+
+            h3{
+                color: $purple;
+                margin-top: 2rem;
+                font-size: 15px;
+            }
+            .time{
+                margin-top: -0.8rem;
+                font-size: 13px;
+                color: $grey;
+            }
+            .free{
+                color: $purple;
+                margin-top: -0.7rem;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            &:hover{
+                cursor: pointer;
+            }
+        }
+        .active{
+            border-color:  hsl(228, 31%, 41%);
+            background-color: hsl(217, 100%, 97%);
+           
+        }
+    }
+    .flexText{
+       @include flex;
+        justify-content: center;
+        background-color: hsl(217, 100%, 97%);
+        margin-top: 2rem;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 3rem;
+        
+        .toggle{
+            background-color: $purple;
+            border-radius: 10px;
+            padding: 2px;
+            width: 40px;
+
+            .indicator{
+                background-color: white;
+                width: 13px;
+                height: 13px;
+                border-radius: 20px;
+                position: relative;
+                top: 2px;
+                left: 2px;
+             
+                &:hover{
+                    cursor: pointer;
+                }
+            }
+            
+          
+            
+        }
+        .monthly{
+            color: $purple;
+            padding-right: 1.5rem;
+            font-weight: 600;
+        }
+        .yearly{
+            color: $grey;
+            font-weight: 600;
+            padding-left: 1.5rem;
+        }
+    }
+    .flexUnder{
+        @include flex;
+        justify-content: space-between;
+        margin-top: 4rem;
+        align-items: center;
+
+        .back{
+            text-decoration: none;
+            color: $grey;
+            font-weight: 600;
+        }
+        button{
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background-color: $purple;
+            color: white;
+            border: none;
+    
+            &:hover{
+                cursor: pointer;
+            }
+        }
+        @media screen and (max-width: 768px) and (min-width: 376px) {
+            background-color: white;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 4rem 1rem 3rem;
+            
+         }
+         @media screen and (max-width: 375px) {
+            background-color: white;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 6rem 1rem 2rem;
+         }
+    }
+}

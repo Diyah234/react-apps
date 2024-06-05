@@ -1,0 +1,61 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: hsl(206, 94%, 87%);
+    overflow-x: hidden;
+}
+.App {
+  overflow-x: hidden;
+
+    
+    .container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        background-color: white;
+        padding: 5px;
+        border-radius: 10px;
+        width: 80%;
+        margin: 0 auto;
+        margin-top: 3rem;
+       
+
+        @media screen and (max-width: 768px) {
+            flex-direction: column;
+            background-color: transparent;
+            width: 100%;
+            margin: 0;
+        }
+
+        .sidebar {
+            padding: 10px;
+            width: 50%;
+          
+
+            @media screen and (max-width: 768px) {
+                padding: 6rem 3rem;
+              }
+        }
+
+        .content {
+            padding: 0 4rem;
+            // margin-left: 8rem;
+            margin-left: -8rem;
+           //height: 31rem;
+           width: 50%;
+           
+
+            @media screen and (max-width: 768px) {
+               margin: 0;
+               padding: 0 1.5rem;
+               width: 75%;
+               background-color: white;
+               position: absolute;
+               top: 8rem;
+               border-radius: 8px;
+               
+              }
+        }
+    }
+}

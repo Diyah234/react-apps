@@ -1,0 +1,112 @@
+
+
+.sideBar{
+    // padding: 1rem 8rem;
+    // width: 70%;
+    // height: 30rem;
+    height: 30rem;
+    padding: 1rem 2rem;
+    width: 50%;
+    background-position: 100% 80%;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    background-size: 100%;
+
+    @media screen and (max-width: 768px) {
+        height: 0;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        border-radius: 0;
+        padding: 6rem 7rem;
+       position: absolute;
+       top: 0;
+       left: 0;
+       right: 0;
+        // position: fixed;
+        // top: 0;
+        // left: 0;
+        // right: 0;
+        margin-bottom: 5rem;
+        margin-top: -1rem;
+    }
+    
+    .sideFlex{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-top: 5px;
+        
+        
+        @media screen and (max-width: 768px) {
+            display: block;
+            margin-top: -5rem;
+            justify-content: center;
+        }
+       
+
+        .number{
+            background-color: transparent;
+            border-radius: 100%;
+            border: 2px solid hsl(206, 94%, 87%);
+            padding: 5px;
+            width: 22px;
+            height: 22px;
+            text-align: center;
+            font-size: 15px;
+            color: hsl(206, 94%, 87%);
+            font-weight: 600;
+
+            @media screen and (max-width: 768px) {
+                margin-right: 1.5rem;
+              }
+        }
+        .activelink{
+            background-color: hsl(206, 94%, 87%);
+            border-radius: 100%;
+            border: 2px solid hsl(206, 94%, 87%);
+            padding: 5px;
+            width: 22px;
+            height: 22px;
+            text-align: center;
+            font-size: 15px;
+            color: hsl(213, 96%, 18%);
+            font-weight: 600;
+
+            
+            @media screen and (max-width: 768px) {
+                margin-right: 1.5rem;
+              }
+        }
+        .sideText{
+            margin-left: 20px;
+            @media screen and (max-width: 768px) {
+                display: none;
+              }
+           
+            
+        .step{
+            font-size: 13px;
+            color: hsl(231, 11%, 63%);
+            margin-bottom: -2px;
+
+           
+          
+        }
+        .link{
+            text-decoration: none;
+            color: hsl(0, 0%, 100%);
+            font-weight: 700;
+           
+            font-size: 14px;
+            margin-top: -1rem;
+            letter-spacing: 1px;
+
+            h4{
+                margin-top: 2px;
+            }
+        }
+    }
+    }
+}

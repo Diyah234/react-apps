@@ -1,0 +1,89 @@
+$purple:  hsl(213, 96%, 18%);
+
+
+.personalinfo{
+    @media screen and (max-width: 768px) {
+        padding-bottom: 4rem;
+    }
+    height: 31rem;
+h1{
+    font-size: 40px;
+    color: $purple;
+    
+    
+    @media screen and (max-width: 768px) {
+        margin-top: 30px;
+      }
+}
+.text{
+    color: hsl(231, 11%, 63%);
+    margin-top: -1.7rem;
+    font-weight: 500;
+}
+form{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 1rem;
+
+    label{
+        color:$purple;
+        font-weight: 500;
+        
+        input{
+            margin-top: 5px;
+            width: 82%;
+            border-radius: 6px;
+            border: 1.5px solid hsl(230, 11%, 89%);
+            padding: 10px;
+        }
+    
+    }
+
+    .nextdiv{
+
+        @media screen and (max-width: 768px) and (min-width: 376px) {
+            background-color: white;
+            position: fixed;
+            bottom: 0;
+            height: 3rem;
+            left: 0;
+            right: 0;
+            padding: 2rem 0;
+         }
+         @media screen and (max-width: 375px) {
+            background-color: white;
+            position: fixed;
+            bottom: 0;
+            height: 3rem;
+            left: 0;
+            right: 0;
+            padding: 2rem 0;
+            
+         }
+    button{
+        width: 7.3%;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 3rem;
+        background-color: $purple;
+        color: white;
+        border: none;
+        position: absolute;
+        right: 17%;
+
+        &:hover{
+            cursor: pointer;
+        }
+        @media screen and (max-width: 768px) {
+            width: 35%;
+            font-size: 16px;
+            margin-top: -1rem;
+            
+        }
+    }
+        
+    }
+    
+}
+}

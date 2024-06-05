@@ -1,0 +1,134 @@
+$purple:  hsl(213, 96%, 18%);
+$grey : hsl(231, 11%, 63%);
+@mixin flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.addons{
+    width: 90%;
+    @media screen and (max-width: 768px) {
+        padding-bottom: 3rem;
+    }
+    h1{
+        font-size: 40px;
+        color: $purple;
+    }
+    .text{
+        color: $grey;
+        margin-top: -1.7rem;
+        font-weight: 500;
+        padding-bottom: 10px;
+    }
+    .message{
+        color: hsl(354, 84%, 57%);
+        margin-top: -1.6rem;
+        font-size: 14px;
+    }
+    .addflex{
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        .addbox{
+            @include flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1.5px solid hsl(230, 11%, 89%);
+            padding: 0 20px 10px;
+            height: 4rem;
+            border-radius: 8px;
+           
+            
+
+            .flexcheck{
+                @include flex;
+                align-items: center;
+
+               
+        input[type="checkbox"] {
+            opacity: 0;
+            position: absolute;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+          }
+  
+          .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border: 1px solid $grey;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            transition: background-color 0.3s, border-color 0.3s;
+  
+            &::after {
+              content: '\2714'; // Unicode character for a checkmark
+              font-size: 14px;
+              color: white;
+              transform: scale(0);
+              transition: transform 0.3s;
+            }
+          }
+  
+          input[type="checkbox"]:checked + .custom-checkbox {
+            background-color: hsl(243, 100%, 62%);
+            border-color: hsl(243, 100%, 62%);
+          }
+  
+          input[type="checkbox"]:checked + .custom-checkbox::after {
+            transform: scale(1);
+          }
+                h4{
+                    color: $purple;
+                    font-size: 17px;
+                }
+                p{
+                    color: $grey;
+                    margin-top: -1.4rem;
+                    font-weight: 500; 
+                    font-size: 14px;
+                   
+                }
+            }
+            .price{
+                color: hsl(228, 67%, 67%);
+                font-weight: 600;
+            }
+        }
+        .active{
+            border-color:  hsl(228, 31%, 41%);
+            background-color: hsl(217, 100%, 97%);
+           
+        }
+    }
+    .flexUnder{
+        @include flex;
+        justify-content: space-between;
+        margin-top: 4rem;
+        align-items: center;
+
+        .back{
+            text-decoration: none;
+            color: $grey;
+            font-weight: 600;
+        }
+        button{
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background-color: $purple;
+            color: white;
+            border: none;
+    
+            &:hover{
+                cursor: pointer;
+            }
+        }
+    }
+}

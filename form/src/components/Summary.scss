@@ -1,0 +1,136 @@
+$purple:  hsl(213, 96%, 18%);
+$grey : hsl(231, 11%, 63%);
+@mixin flex {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.summary{
+    @media screen and (max-width: 768px) {
+        padding-bottom: 3rem;
+    }
+    h1{
+        font-size: 40px;
+        color: $purple;
+        
+        
+        @media screen and (max-width: 768px) {
+            margin-top: 30px;
+          }
+    }
+    .text{
+        color: hsl(231, 11%, 63%);
+        margin-top: -1.7rem;
+        font-weight: 500;
+    }
+
+    .summarybox{
+        background-color: hsl(231, 100%, 99%);
+        padding: 5px 25px;
+        border-radius: 8px;
+
+        .plan{
+            @include flex;
+            align-items: center;
+            border-bottom: 1.3px solid hsl(240, 2%, 82%);
+            padding-bottom: 1rem;
+
+            @media screen and (max-width: 768px) {
+                padding: 0;
+                
+            }
+
+            h3{
+                color: $purple;
+                font-size: 17px;
+                margin-bottom: 2px;
+            }
+            .change{
+                color: $grey;
+                font-weight: 600;
+                font-size: 14px;
+                
+            }
+            .planprice{
+                color: $purple;
+                font-weight: 600;
+                margin-top: 10px;
+            }
+        }
+        .addons{
+            padding-top: 1rem;
+            .plans{
+                @include flex;
+                padding-bottom: 1rem;
+
+                .addonstext{
+                    color: $grey;
+                    font-weight: 600;
+                }
+                .addprice{
+                    color: $purple;
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+    .total{
+        @include flex;
+        align-items: center;
+        width: 90%;
+        padding-top: 10px;
+        margin: 0 auto;
+
+        .per{
+            color: $grey;
+            font-weight: 600;
+        }
+        h3{
+            color: hsl(243, 100%, 62%);
+            font-weight: 700;
+            font-size: 18px;
+        }
+    }
+   
+    .flexUnder{
+        @include flex;
+        justify-content: space-between;
+        margin-top: 4rem;
+        align-items: center;
+
+        .back{
+            text-decoration: none;
+            color: $grey;
+            font-weight: 600;
+        }
+        button{
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background-color: hsl(243, 100%, 62%);
+            color: white;
+            border: none;
+    
+            &:hover{
+                cursor: pointer;
+            }
+        }
+    }
+}
+.thanks{
+    @media screen and (max-width: 768px) {
+        padding-bottom: 5rem;
+    }
+   
+    text-align: center;
+    margin-left: -1rem;
+    .thankstext{
+        text-align: center;
+        color: $grey;
+        width: 84%;
+        margin: 0 auto;
+        
+
+    }
+   
+}
