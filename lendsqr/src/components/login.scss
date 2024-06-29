@@ -1,0 +1,77 @@
+.login{
+    display: flex;
+    flex-direction: row;
+  
+
+    .loginpic{
+        background-color: #fbfbfb;
+        padding: 4rem 3rem;
+        height: 30rem;
+
+        .logo{
+            padding-bottom: 5rem;
+            padding-left: 3rem;
+        }
+    }
+    .loginInputs{
+        padding: 5rem 4rem;
+        margin-top: 4rem;
+        width: 100%;
+
+        h1{
+            color: #213F7D;
+            font-weight: 700;
+            font-size: 40px;
+        }
+        p{
+            color: #545F7D;
+            font-size: 16px;
+            margin-top: -20px;
+        }
+        form{
+            margin-top: 3rem;
+
+            .inputbox{
+                width: 90%;
+                border: 2px solid #545F7D26;
+                border-radius: 5px;
+                height: 43px;
+                margin-bottom: 20px;
+                
+
+                input{
+                    height: 20px;
+                    width: 82%;
+                    padding: 9px 12px;
+                    border: none;
+
+                    &:focus{
+                        outline: none;
+                    }
+                }
+                span{
+                    color: #39CDCC;
+                    font-size: 12px;
+                    padding-top: 5px;
+                    
+                }
+            }
+            .forgot{
+                color: #39CDCC;
+                font-size: 12px;
+                font-weight: 600;
+                padding-top: 17px;
+            }
+            button{
+                width: 90%;
+                background-color: #39CDCC;
+                border: none;
+                border-radius: 8px;
+                padding: 14px;
+                font-size: 15px;
+                margin-top: 15px;
+                color: white;
+            }
+        }
+    }
+}

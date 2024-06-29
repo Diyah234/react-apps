@@ -19,6 +19,7 @@ export function ContextProvider({ children }) {
     Pro: { price: { yearly: "$150/yr", monthly: "$15/mo" } }
   };
 
+
   return (
     <Context.Provider value={{ activeLink, setActiveLink,activeStep, setActiveStep, addOnsDetails, selectedPlan, setSelectedPlan, billingPeriod, setBillingPeriod, plansDetails }}>
       {children}

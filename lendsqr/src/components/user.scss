@@ -1,0 +1,306 @@
+@mixin status {
+    width: fit-content;
+    height: 20px;
+    /* Adjust as needed */
+    padding: 3px 14px;
+    text-align: center;
+
+    position: relative;
+    display: inline-block;
+    margin-left: 17px;
+}
+
+@mixin before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.2;
+    /* Adjust opacity here */
+    // z-index: -1;
+    border-radius: 15px;
+}
+
+.user {
+    background-color: rgb(244, 244, 245);
+    margin-top: 7rem;
+    padding: 2rem 3rem;
+    width: 100%;
+    margin-left: 17.6rem;
+
+    overflow-x: scroll;
+
+    h1 {
+        color: #213F7D;
+        font-weight: 500;
+        font-size: 35px;
+    }
+
+    .usergrid {
+        display: grid;
+        grid-template-columns: repeat(4, 20%);
+
+        .box {
+            background-color: white;
+            margin-right: 2rem;
+            padding: 10px 10px 10px 25px;
+            border-radius: 4px;
+            box-shadow: 3px 5px 20px 0px #0000000A;
+
+            img {
+                margin-top: 15px;
+            }
+
+            h4 {
+                margin-top: 5px;
+                color: #545F7D;
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            p {
+                color: #213F7D;
+                margin-top: -8px;
+                font-weight: 600;
+                font-size: 24px;
+            }
+        }
+    }
+}
+
+.tablebox {
+    
+    .table {
+        background-color: white;
+       
+        margin-top: 2rem;
+        padding: 0 10px 10px;
+        border-radius: 8px;
+        max-width: 85%;
+        box-shadow: 3px 5px 20px 0px #0000000A;
+
+        .box {
+
+
+
+            .row {
+                display: grid;
+                grid-template-columns: repeat(7, 14%);
+                gap: 28px;
+                align-items: center;
+
+                .dot {
+                    margin-left: -2rem;
+
+                    &:hover{
+                        cursor: pointer;
+                    }
+                }
+                
+                .col {
+                    width: 100%;
+                    padding: 18px;
+
+                    span {
+                        margin-left: 10px;
+
+                        &:hover{
+                            cursor: pointer;
+                        }
+
+                    }
+
+                }
+            }
+
+            .row1 {
+                font-size: 12px;
+                color: #545F7D;
+                font-weight: 600;
+                padding-top: 10px;
+
+            }
+
+            .row2 {
+                font-size: 14px;
+                color: #545F7D;
+                border-bottom: 1px solid #213F7D1A;
+
+                
+                .pending,
+                .inactive,
+                .blacklisted,
+                .active {
+                    @include status();
+                }
+
+                .pending::before {
+                    @include before();
+                    background-color: #E9B200;
+
+                }
+
+                .pending p {
+                    position: relative;
+                    z-index: 1;
+                    margin: 0;
+                    color: #E9B200;
+                    font-size: 14px;
+                }
+
+                .inactive::before {
+                    @include before();
+                    background-color: #545F7D;
+                }
+
+                .inactive p {
+                    position: relative;
+                    z-index: 1;
+                    margin: 0;
+                    color: #545F7D;
+                    font-size: 14px;
+                }
+
+                .active::before {
+                    @include before();
+                    background-color: #39CD62;
+                }
+
+                .active p {
+                    position: relative;
+                    z-index: 1;
+                    margin: 0;
+                    color: #39CD62;
+                    font-size: 14px;
+                }
+
+                .blacklisted::before {
+                    @include before();
+                    background-color: #E4033B;
+                }
+
+                .blacklisted p {
+                    position: relative;
+                    z-index: 1;
+                    margin: 0;
+                    color: #E4033B;
+                    font-size: 14px;
+                }
+
+            }
+        }
+
+
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        padding: 0;
+        margin: 1rem 0;
+
+        .page-item {
+            margin: 0 8px;
+            color: #545F7D;
+            
+            
+            &.active .page-link {
+                font-weight: bold;
+                color: #545F7D;
+            }
+
+            &:not(.disabled) {
+                .page-link {
+                    cursor: pointer;
+                    transition: background-color 0.3s, color 0.3s;
+
+                  
+                    &:hover {
+                        background-color: #f1f1f1;
+                    }
+                }
+            }
+
+        }
+        
+    }
+
+    .show{
+        display: block;
+        position: absolute;
+        background-color: white;
+        top: 84%;
+        padding: 1rem;
+        width: 20%;
+        border: 1px solid #545F7D24;
+        box-shadow: 3px 5px 20px 0px #0000000A;
+
+        
+        label{
+            font-size: 14px;
+            color: #545F7D;
+        }
+
+        input, select{
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid #213F7D;
+            margin: 3px 0 10px;
+        }
+        input{
+            width: 90%;
+        }
+        select{
+            background-color: white;
+            width: 98%;
+
+        }
+
+        .reset, .filter{
+            padding: 7px 25px;
+            border-radius: 5px;
+            margin-top: 10px;
+        } 
+        .reset{
+            background-color: white;
+            border: 1px solid #545F7D;
+            color: #545F7D;
+        }
+        .filter{
+            border: none;
+            background-color: #39CDCC;
+            color: white;
+            margin-left: 10px;
+        }
+
+    }
+    .showminibox{
+        position: absolute;
+        background-color: white;
+        right: -10rem;
+        // top: 45rem;
+        padding: 5px 25px;
+        box-shadow: 3px 5px 20px 0px #0000000A;
+        z-index: 1;
+
+
+        &:hover{
+            cursor: pointer;
+        }
+
+        .miniflex{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            margin-top: -16px;
+            color: #545F7D;
+        }
+    }
+    .hide{
+        display: none;
+    }
+}
