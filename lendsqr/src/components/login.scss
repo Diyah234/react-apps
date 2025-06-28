@@ -1,6 +1,7 @@
 .login{
     display: flex;
     flex-direction: row;
+    overflow: hidden;
   
 
     .loginpic{
@@ -54,6 +55,9 @@
                     font-size: 12px;
                     padding-top: 5px;
                     
+                    &:hover{
+                        cursor: pointer;
+                    }
                 }
             }
             .forgot{

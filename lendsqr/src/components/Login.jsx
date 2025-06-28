@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import logo from '../images/logo.svg';
 import signpic from '../images/signpic.png';
 import { useFormik } from 'formik';
@@ -15,6 +15,15 @@ function Login({setDashboard}) {
           setDashboard(true)
         },
       });
+      const inputRef = useRef()
+      const handlePassword =()=>{
+        var x = inputRef.current
+        if (x.type === "password") {
+          x.type = "text";
+        } else {
+          x.type = "password";
+        }
+      }
   return (
     <div className='login'>
         <div className='loginpic'>
@@ -27,10 +36,10 @@ function Login({setDashboard}) {
             <form onSubmit={formik.handleSubmit}>
                <div className='inputbox'><input type='email'  id="email"
          name="email" placeholder='Email' onChange={formik.handleChange}
-         value={formik.values.email}/></div>
+         value={formik.values.email} required/></div>
                 <div className='inputbox'><input type='password' id="password"
          name="password" placeholder='password' onChange={formik.handleChange}
-         value={formik.values.password} /><span>SHOW</span></div>
+         value={formik.values.password} ref={inputRef} required/><span onClick={handlePassword}>SHOW</span></div>
          <p className='forgot'>FORGOT PASSWORD?</p>
          <button type='submit'>LOG IN</button>
          </form>
