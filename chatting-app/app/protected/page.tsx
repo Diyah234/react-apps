@@ -11,19 +11,19 @@ import { MdOutlineEmojiEmotions } from "react-icons/md";
 import EmojiPicker from 'emoji-picker-react';
 import { insertMessage } from "@/lib/supabase/message";
 import Image from "next/image";
-import { RealtimeChannel } from "@supabase/supabase-js";
+import { v4 as uuidv4 } from 'uuid';
 
-// Define a type for the fetched messages to ensure type safety
 interface Message {
     id: string;
     text: string;
     created_at: string;
-    user: string; // This is the user ID (UUID)
-    profiles: {  // This is the joined user profile data
+    user_id: string;
+    profiles: {
         name: string;
         email: string;
         avatar_url?: string;
     };
+    isOptimistic?: boolean; // Flag for optimistic messages
 }
 
 export default function ProtectedPage() {
@@ -35,9 +35,8 @@ export default function ProtectedPage() {
     const [open, setOpen] = useState(false);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
-    const channelRef = useRef<RealtimeChannel | null>(null);
-    const chatContainerRef = useRef<HTMLDivElement>(null); // Ref for scrolling
-    // Removed usersData state as we're getting user info directly from message.profiles
+    const channelRef = useRef<any>(null);
+    const chatContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const checkSession = async () => {
@@ -72,38 +71,55 @@ export default function ProtectedPage() {
     }, [dispatch, router, supabase, user]);
 
     const realTimeSubscription = () => {
-        const channel = supabase.channel('messages');
-        channel.on('postgres_changes', {
-                event: "INSERT",
-                schema: "public",
-                table: "messages"
-            },
-            async (payload) => {
-                console.log('changes received', payload);
-                // Updated query to include avatar_url with correct field name
-                const { data, error } = await supabase
-                    .from('messages')
-                    .select('*, profiles(name, email, avatar_url)')
-                    .eq('id', payload.new.id)
-                    .single();
+        const channel = supabase
+            .channel('messages-realtime')
+            .on('postgres_changes', 
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages'
+                }, 
+                async (payload) => {
+                    console.log('New message received:', payload);
+                    
+                    try {
+                        const { data, error } = await supabase
+                            .from('messages')
+                            .select('*, profiles(name, email, avatar_url)')
+                            .eq('id', payload.new.id)
+                            .single();
 
-                if (error) {
-                    console.error("Error fetching new message:", error);
-                } else if (data) {
-                    setMessages((prevMessages) => [...prevMessages, data as Message]);
+                        if (error) {
+                            console.error("Error fetching new message:", error);
+                            return;
+                        }
+
+                        if (data) {
+                            setMessages((prevMessages) => {
+                                // Remove optimistic message if it exists
+                                const withoutOptimistic = prevMessages.filter(msg => 
+                                    !msg.isOptimistic || msg.user_id !== data.user_id
+                                );
+                                
+                                // Check if real message already exists
+                                const exists = withoutOptimistic.some(msg => msg.id === data.id);
+                                if (exists) return withoutOptimistic;
+                                
+                                return [...withoutOptimistic, data as Message];
+                            });
+                        }
+                    } catch (err) {
+                        console.error('Error in realtime handler:', err);
+                    }
                 }
-            }
-        ).subscribe((status) => {
-            if (status !== 'SUBSCRIBED')
-                return;
-            console.log('realtime connection established');
-        });
+            )
+            .subscribe();
+            
         return channel;
     };
 
     useEffect(() => {
         const fetchMessages = async () => {
-            // Updated query to include avatar_url with correct field name
             const { data, error } = await supabase
                 .from('messages')
                 .select('*, profiles(name, email, avatar_url)')
@@ -113,7 +129,6 @@ export default function ProtectedPage() {
                 console.error("Error fetching messages:", error);
             } else if (data) {
                 setMessages(data as Message[]);
-                console.log("Fetched messages:", data);
             }
         };
 
@@ -125,17 +140,13 @@ export default function ProtectedPage() {
         return () => {
             channelRef.current?.unsubscribe();
         };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, supabase]);
 
-    // Effect to auto-scroll to the bottom when messages change
     useEffect(() => {
         if (chatContainerRef.current) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
     }, [messages]);
-
 
     if (isChecking) {
         return (
@@ -157,14 +168,34 @@ export default function ProtectedPage() {
         const text = message.trim();
         if (!text) return;
 
-        console.log("Attempting to send message:", text);
+        const optimisticId = uuidv4();
+        
+        // Add optimistic message immediately
+        const optimisticMessage: Message = {
+            id: optimisticId,
+            text,
+            created_at: new Date().toISOString(),
+            user_id: user.id,
+            profiles: {
+                name: userName,
+                email: user.email || '',
+                avatar_url: userUrl
+            },
+            isOptimistic: true
+        };
 
+        // Show message immediately
+        setMessages(prev => [...prev, optimisticMessage]);
+        setMessage(''); // Clear input immediately
+
+        // Send to database
         const { success, error } = await insertMessage(text);
-        if (success) {
-            setMessage('');
-            console.log("Message sent successfully!");
-        } else {
+        
+        if (!success) {
             console.error("Failed to send message:", error);
+            // Remove optimistic message on error
+            setMessages(prev => prev.filter(msg => msg.id !== optimisticId));
+            setMessage(text); // Restore message to input
         }
     };
 
@@ -177,27 +208,64 @@ export default function ProtectedPage() {
 
     return (
         <div className="flex flex-col h-[85vh] md:h-[90vh] bg-gray-800 rounded-lg shadow-xl overflow-hidden border border-gray-700">
-            {/* Chat Messages Container */}
+            <style jsx>{`
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
+                .animate-fade-in-up {
+                    animation: fadeInUp 0.3s ease-out;
+                }
+                
+                @keyframes slideInFromRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                
+                @keyframes slideInFromLeft {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+            `}</style>
             <div ref={chatContainerRef} className="p-5 flex-1 overflow-y-auto flex flex-col gap-5">
                 {messages.map((msg) => {
-                    // Formatting the timestamp
                     const messageDate = new Date(msg.created_at);
                     const formattedTime = messageDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                     
-                    // The user ID is in the 'user' field (not user_id)
-                    const messageUserId = msg.user;
-                    
-                    // Determine if the message was sent by the current user
+                    const messageUserId = msg.user_id;
                     const isCurrentUser = messageUserId === user.id;
                     
-                    // Get the other user's avatar and initial from profiles
                     const otherUserAvatar = msg.profiles?.avatar_url;
                     const otherUserInitial = msg.profiles?.name?.charAt(0).toUpperCase() || 'A';
 
                     return (
                         <div
                             key={msg.id}
-                            className={`flex flex-row gap-2 items-start ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                            className={`flex flex-row gap-2 items-start ${isCurrentUser ? 'justify-end' : 'justify-start'} ${
+                                msg.isOptimistic ? 'opacity-70 animate-pulse' : 'opacity-100'
+                            } animate-fade-in-up transition-all duration-300 ease-in-out`}
+                            style={{
+                                animation: msg.isOptimistic ? 'fadeInUp 0.3s ease-out, pulse 2s infinite' : 'fadeInUp 0.3s ease-out'
+                            }}
                         >
                             {!isCurrentUser && (
                                 <div className="flex-shrink-0">
@@ -216,10 +284,10 @@ export default function ProtectedPage() {
                                     )}
                                 </div>
                             )}
-                            <div className={`p-3 rounded-2xl max-w-xs md:max-w-md lg:max-w-lg ${
+                            <div className={`p-3 rounded-2xl max-w-xs md:max-w-md lg:max-w-lg transform transition-all duration-200 hover:scale-105 ${
                                 isCurrentUser 
-                                    ? 'bg-blue-600 rounded-tr-none' 
-                                    : 'bg-gray-700 rounded-tl-none'
+                                    ? 'bg-blue-600 rounded-tr-none hover:bg-blue-700' 
+                                    : 'bg-gray-700 rounded-tl-none hover:bg-gray-600'
                             }`}>
                                 <div className="flex flex-row items-center justify-between gap-4">
                                     <h1 className="text-xs font-semibold text-gray-300">
@@ -227,6 +295,7 @@ export default function ProtectedPage() {
                                     </h1>
                                     <span className="text-xs text-gray-400">
                                         {formattedTime}
+                                        {msg.isOptimistic && <span className="ml-1 animate-spin">⏳</span>}
                                     </span>
                                 </div>
                                 <p className="text-white mt-1">{msg.text}</p>
@@ -253,21 +322,20 @@ export default function ProtectedPage() {
                 })}
             </div>
 
-            {/* Input Bar */}
             <div className="p-4 border-t border-gray-700 bg-gray-800">
                 <div className="flex flex-row items-center gap-4">
                     <div className="flex-1 relative">
                         <input
                             type="text"
                             placeholder="Type a message..."
-                            className="w-full pl-4 pr-16 py-3 border border-gray-600 rounded-full focus:outline-none focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400"
+                            className="w-full pl-4 pr-16 py-3 border border-gray-600 rounded-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-gray-700 text-white placeholder-gray-400 transition-all duration-200"
                             onChange={(e) => setMessage(e.target.value)}
                             value={message}
                             onKeyDown={handleKeyDown}
                         />
                         <button
                             onClick={() => setOpen(prev => !prev)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-2xl text-gray-400 hover:text-blue-500 transition-colors"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-2xl text-gray-400 hover:text-blue-500 transition-all duration-200 hover:scale-110 active:scale-95"
                         >
                             <MdOutlineEmojiEmotions />
                         </button>
@@ -275,13 +343,22 @@ export default function ProtectedPage() {
 
                     <button
                         onClick={handleSubmit}
-                        className="bg-blue-600 text-white rounded-full p-3 px-5 flex items-center gap-2 font-semibold hover:bg-blue-700 transition-colors"
+                        className="bg-blue-600 text-white rounded-full p-3 px-5 flex items-center gap-2 font-semibold hover:bg-blue-700 transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                         <AiOutlineSend />
                         <span className="hidden sm:inline">Send</span>
                     </button>
                 </div>
-                {open && <EmojiPicker onEmojiClick={(emoji) => console.log(emoji.emoji)} className='relative mt-4' />}
+                {open && (
+                    <div className="animate-fade-in-up">
+                        <EmojiPicker 
+                            onEmojiClick={(emoji) => {
+                                setMessage(prev => prev + emoji.emoji);
+                            }} 
+                            className='relative mt-4' 
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );
