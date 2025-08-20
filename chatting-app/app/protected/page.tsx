@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
-import { useEffect, useState, KeyboardEvent, useRef, } from "react";
+import { useEffect, useState, KeyboardEvent, useRef, useCallback } from "react";
 import { clearUser, setUser } from "@/lib/redux/features/UserSlice";
 import { AiOutlineSend } from "react-icons/ai";
 import { MdOutlineEmojiEmotions } from "react-icons/md";
@@ -12,6 +12,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { insertMessage } from "@/lib/supabase/message";
 import Image from "next/image";
 import { v4 as uuidv4 } from 'uuid';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Message {
     id: string;
@@ -35,7 +36,7 @@ export default function ProtectedPage() {
     const [open, setOpen] = useState(false);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
-    const channelRef = useRef<any>(null);
+    const channelRef = useRef<RealtimeChannel | null>(null);
     const chatContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -70,7 +71,7 @@ export default function ProtectedPage() {
         return () => subscription.unsubscribe();
     }, [dispatch, router, supabase, user]);
 
-    const realTimeSubscription = () => {
+    const realTimeSubscription = useCallback(() => {
         const channel = supabase
             .channel('messages-realtime')
             .on('postgres_changes', 
@@ -116,7 +117,7 @@ export default function ProtectedPage() {
             .subscribe();
             
         return channel;
-    };
+    }, [supabase]);
 
     useEffect(() => {
         const fetchMessages = async () => {
@@ -138,9 +139,11 @@ export default function ProtectedPage() {
         }
         
         return () => {
-            channelRef.current?.unsubscribe();
+            if (channelRef.current) {
+                channelRef.current.unsubscribe();
+            }
         };
-    }, [user, supabase]);
+    }, [user, supabase, realTimeSubscription]);
 
     useEffect(() => {
         if (chatContainerRef.current) {
