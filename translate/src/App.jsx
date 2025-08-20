@@ -19,7 +19,7 @@ const matches = useMediaQuery('(min-width:600px)');
         </Grid>
         <Grid size={12}>
           <Box>
-            <div className='bg-black w-full max-w-full lg:h-105 h-180 '></div>
+            <div className='bg-black w-full max-w-full lg:h-85 h-160 '></div>
           </Box>
         </Grid>
       </Grid>
