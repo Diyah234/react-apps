@@ -2,7 +2,7 @@
 import { AuthButton } from "@/components/auth-button";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
-import { ThemeSwitcher } from "@/components/theme-switcher"; // Assuming you have this
+
 
 export default function ProtectedLayout({
   children,

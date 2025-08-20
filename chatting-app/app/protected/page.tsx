@@ -11,6 +11,7 @@ import { MdOutlineEmojiEmotions } from "react-icons/md";
 import EmojiPicker from 'emoji-picker-react';
 import { insertMessage } from "@/lib/supabase/message";
 import Image from "next/image";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 // Define a type for the fetched messages to ensure type safety
 interface Message {
@@ -34,7 +35,7 @@ export default function ProtectedPage() {
     const [open, setOpen] = useState(false);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
-    const channelRef = useRef(null);
+    const channelRef = useRef<RealtimeChannel | null>(null);
     const chatContainerRef = useRef<HTMLDivElement>(null); // Ref for scrolling
     // Removed usersData state as we're getting user info directly from message.profiles
 
@@ -125,6 +126,7 @@ export default function ProtectedPage() {
             channelRef.current?.unsubscribe();
         };
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, supabase]);
 
     // Effect to auto-scroll to the bottom when messages change
