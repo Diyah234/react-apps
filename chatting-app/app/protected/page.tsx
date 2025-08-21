@@ -110,8 +110,8 @@ export default function ProtectedPage() {
         },
         async (payload) => {
           console.log("New message received:", payload);
-
           try {
+            // Fetch the main message and its profile
             const { data, error } = await supabase
               .from("messages")
               .select("*, profiles(name, email, avatar_url)")
@@ -124,19 +124,40 @@ export default function ProtectedPage() {
             }
 
             if (data) {
+              const newMessage: Message = data as Message;
+
+              // If the message has a reply_to ID, fetch the replied message's details
+              if (newMessage.reply_to) {
+                const { data: repliedData, error: repliedError } = await supabase
+                  .from("messages")
+                  .select("text, profiles(name)") // Select only the necessary fields
+                  .eq("id", newMessage.reply_to)
+                  .single();
+
+                if (repliedData && repliedData.profiles && repliedData.profiles.length > 0) {
+                  // Access the name property from the first element of the profiles array
+                  newMessage.replied_message = {
+                    id: newMessage.reply_to,
+                    text: repliedData.text,
+                    user_name: repliedData.profiles[0].name || "Anonymous",
+                  };
+                } else {
+                  console.error("Error fetching replied message details:", repliedError);
+                }
+              }
+
               setMessages((prevMessages) => {
-                // Remove optimistic message if it exists
+                // Remove the optimistic message with the same user ID
                 const withoutOptimistic = prevMessages.filter(
-                  (msg) => !msg.isOptimistic || msg.user_id !== data.user_id
+                  (msg) => !(msg.isOptimistic && msg.user_id === newMessage.user_id)
                 );
 
-                // Check if real message already exists
-                const exists = withoutOptimistic.some(
-                  (msg) => msg.id === data.id
-                );
-                if (exists) return withoutOptimistic;
+                // Check if the real message already exists to prevent duplicates
+                const exists = withoutOptimistic.some((msg) => msg.id === newMessage.id);
+                if (exists) return prevMessages; // If it exists, return the original array
 
-                return [...withoutOptimistic, data as Message];
+                // Add the new message to the list
+                return [...withoutOptimistic, newMessage];
               });
             }
           } catch (err) {
@@ -148,7 +169,6 @@ export default function ProtectedPage() {
 
     return channel;
   }, [supabase]);
-
   useEffect(() => {
     const fetchMessages = async () => {
       const { data, error } = await supabase
