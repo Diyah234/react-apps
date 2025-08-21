@@ -1,4 +1,5 @@
 // pages/ProtectedLayout.tsx
+"use client"
 import { AuthButton } from "@/components/auth-button";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
@@ -24,7 +25,7 @@ export default function ProtectedLayout({
         <nav className="w-full flex justify-center border-b border-b-gray-700 h-16">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
             <h1 className="flex gap-5 items-center font-semibold text-lg text-white">
-              <Link href="/">Global Chat</Link>
+              <Link href="/">GlobalChat App</Link>
             </h1>
             <div className="flex items-center gap-3">
               <MdOutlineDarkMode onClick={() => dispatch(toggletheme())} className="cursor-pointer text-2xl" />
