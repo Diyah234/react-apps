@@ -99,96 +99,43 @@ export default function ProtectedPage() {
   }, [dispatch, router, supabase, user]);
 
   const realTimeSubscription = useCallback(() => {
-    const channel = supabase
-      .channel("messages-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-        },
-        async (payload) => {
-          console.log("New message received:", payload);
-          try {
-            // Fetch the main message and its profile
-            const { data, error } = await supabase
-              .from("messages")
-              .select("*, profiles(name, email, avatar_url)")
-              .eq("id", payload.new.id)
-              .single();
+  const channel = supabase
+    .channel("messages-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+      },
+      async (payload) => {
+        console.log("New message received:", payload);
+        try {
+          // Fetch the main message and its profile
+          const { data, error } = await supabase
+            .from("messages")
+            .select("*, profiles(name, email, avatar_url)")
+            .eq("id", payload.new.id)
+            .single();
 
-            if (error) {
-              console.error("Error fetching new message:", error);
-              return;
-            }
-
-            if (data) {
-              const newMessage: Message = data as Message;
-
-              // If the message has a reply_to ID, fetch the replied message's details
-              if (newMessage.reply_to) {
-                const { data: repliedData } = await supabase
-                  .from("messages")
-                  .select("text, profiles(name)") // Select only the necessary fields
-                  .eq("id", newMessage.reply_to)
-                  .single();
-
-                if (repliedData && repliedData.profiles && repliedData.profiles.length > 0) {
-                  // Access the name property from the first element of the profiles array
-                  newMessage.replied_message = {
-                    id: newMessage.reply_to,
-                    text: repliedData.text,
-                    user_name: repliedData.profiles[0].name || "Anonymous",
-                  };
-                }
-              }
-
-              setMessages((prevMessages) => {
-                // Remove the optimistic message with the same user ID
-                const withoutOptimistic = prevMessages.filter(
-                  (msg) => !(msg.isOptimistic && msg.user_id === newMessage.user_id)
-                );
-
-                // Check if the real message already exists to prevent duplicates
-                const exists = withoutOptimistic.some((msg) => msg.id === newMessage.id);
-                if (exists) return prevMessages; // If it exists, return the original array
-
-                // Add the new message to the list
-                return [...withoutOptimistic, newMessage];
-              });
-            }
-          } catch (err) {
-            console.error("Error in realtime handler:", err);
+          if (error) {
+            console.error("Error fetching new message:", error);
+            return;
           }
-        }
-      )
-      .subscribe();
 
-    return channel;
-  }, [supabase]);
+          if (data) {
+            const newMessage: Message = data as Message;
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-        const { data, error } = await supabase
-          .from("messages")
-          .select("*, profiles(name, email, avatar_url)")
-          .order("created_at", { ascending: true });
-    
-        if (error) {
-          console.error("Error fetching messages:", error);
-        } else if (data) {
-          const messagesWithReplies: Message[] = [];
-          for (const msg of data) {
-            const newMessage: Message = msg as Message;
+            // If the message has a reply_to ID, fetch the replied message's details
             if (newMessage.reply_to) {
               const { data: repliedData } = await supabase
                 .from("messages")
                 .select("text, profiles(name)")
                 .eq("id", newMessage.reply_to)
                 .single();
-    
-              if (repliedData && repliedData.profiles && repliedData.profiles.length > 0) {
+
+              // Fix: Access profiles as an array (Supabase joins return arrays)
+              if (repliedData && repliedData.profiles && Array.isArray(repliedData.profiles) && repliedData.profiles.length > 0) {
                 newMessage.replied_message = {
                   id: newMessage.reply_to,
                   text: repliedData.text,
@@ -196,11 +143,65 @@ export default function ProtectedPage() {
                 };
               }
             }
-            messagesWithReplies.push(newMessage);
+
+            setMessages((prevMessages) => {
+              // Remove the optimistic message with the same user ID
+              const withoutOptimistic = prevMessages.filter(
+                (msg) => !(msg.isOptimistic && msg.user_id === newMessage.user_id)
+              );
+
+              // Check if the real message already exists to prevent duplicates
+              const exists = withoutOptimistic.some((msg) => msg.id === newMessage.id);
+              if (exists) return prevMessages;
+
+              // Add the new message to the list
+              return [...withoutOptimistic, newMessage];
+            });
           }
-          setMessages(messagesWithReplies);
+        } catch (err) {
+          console.error("Error in realtime handler:", err);
         }
-      };
+      }
+    )
+    .subscribe();
+
+  return channel;
+}, [supabase]);
+
+  useEffect(() => {
+   const fetchMessages = async () => {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("*, profiles(name, email, avatar_url)")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching messages:", error);
+  } else if (data) {
+    const messagesWithReplies: Message[] = [];
+    for (const msg of data) {
+      const newMessage: Message = msg as Message;
+      if (newMessage.reply_to) {
+        const { data: repliedData } = await supabase
+          .from("messages")
+          .select("text, profiles(name)")
+          .eq("id", newMessage.reply_to)
+          .single();
+
+        // Fix: Access profiles as an array (Supabase joins return arrays)
+        if (repliedData && repliedData.profiles && Array.isArray(repliedData.profiles) && repliedData.profiles.length > 0) {
+          newMessage.replied_message = {
+            id: newMessage.reply_to,
+            text: repliedData.text,
+            user_name: repliedData.profiles[0].name || "Anonymous",
+          };
+        }
+      }
+      messagesWithReplies.push(newMessage);
+    }
+    setMessages(messagesWithReplies);
+  }
+};
       
 
     const fetchUsers = async () => {
@@ -356,20 +357,20 @@ export default function ProtectedPage() {
     }, 100);
   };
 
-  const extractMentions = (text: string): string[] => {
-    const mentionRegex = /@(\w+)/g;
-    const mentions = [];
-    let match;
+const extractMentions = (text: string): string[] => {
+  const mentionRegex = /@(\w+)/g;
+  const mentions: string[] = []; // Add explicit typing
+  let match: RegExpExecArray | null; // Add explicit typing
 
-    while ((match = mentionRegex.exec(text)) !== null) {
-      const mentionedUser = users.find((u) => u.name === match![1]);
-      if (mentionedUser) {
-        mentions.push(mentionedUser.id);
-      }
+  while ((match = mentionRegex.exec(text)) !== null) {
+    const mentionedUser = users.find((u) => u.name === match![1]);
+    if (mentionedUser) {
+      mentions.push(mentionedUser.id);
     }
+  }
 
-    return mentions;
-  };
+  return mentions;
+};
 
   const renderMessageText = (text: string) => {
     const mentionRegex = /@(\w+)/g;
