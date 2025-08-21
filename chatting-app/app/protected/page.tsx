@@ -128,7 +128,7 @@ export default function ProtectedPage() {
 
               // If the message has a reply_to ID, fetch the replied message's details
               if (newMessage.reply_to) {
-                const { data: repliedData, error: repliedError } = await supabase
+                const { data: repliedData } = await supabase
                   .from("messages")
                   .select("text, profiles(name)") // Select only the necessary fields
                   .eq("id", newMessage.reply_to)
@@ -141,8 +141,6 @@ export default function ProtectedPage() {
                     text: repliedData.text,
                     user_name: repliedData.profiles[0].name || "Anonymous",
                   };
-                } else {
-                  console.error("Error fetching replied message details:", repliedError);
                 }
               }
 
@@ -184,7 +182,7 @@ export default function ProtectedPage() {
           for (const msg of data) {
             const newMessage: Message = msg as Message;
             if (newMessage.reply_to) {
-              const { data: repliedData, error: repliedError } = await supabase
+              const { data: repliedData } = await supabase
                 .from("messages")
                 .select("text, profiles(name)")
                 .eq("id", newMessage.reply_to)
@@ -203,6 +201,7 @@ export default function ProtectedPage() {
           setMessages(messagesWithReplies);
         }
       };
+      
 
     const fetchUsers = async () => {
       const { data, error } = await supabase
