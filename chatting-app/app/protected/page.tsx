@@ -13,11 +13,10 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
 import { insertMessage } from "@/lib/supabase/message";
 import Image from "next/image";
-import { v4 as uuidv4 } from "uuid";
 import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface Message {
-  id: string;
+  id: number;
   text: string;
   created_at: string;
   user_id: string;
@@ -27,13 +26,13 @@ interface Message {
     avatar_url?: string;
   };
   isOptimistic?: boolean;
-  reply_to?: string;
+  reply_to?: number;
   replied_message?: {
-    id: string;
+    id: number;
     text: string;
     user_name: string;
   };
-  mentions?: string[]; // Array of user IDs who were mentioned
+  mentions?: string[];
 }
 
 interface User {
@@ -56,9 +55,7 @@ export default function ProtectedPage() {
   const [showMentions, setShowMentions] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
   const [cursorPosition, setCursorPosition] = useState(0);
-  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
-    null
-  );
+  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -99,110 +96,148 @@ export default function ProtectedPage() {
   }, [dispatch, router, supabase, user]);
 
   const realTimeSubscription = useCallback(() => {
-  const channel = supabase
-    .channel("messages-realtime")
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-      },
-      async (payload) => {
-        console.log("New message received:", payload);
-        try {
-          // Fetch the main message and its profile
-          const { data, error } = await supabase
-            .from("messages")
-            .select("*, profiles(name, email, avatar_url)")
-            .eq("id", payload.new.id)
-            .single();
+    const channel = supabase
+      .channel("messages-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        async (payload) => {
+          console.log("New message received:", payload);
+          try {
+            const { data, error } = await supabase
+              .from("messages")
+              .select(`
+                *,
+                profiles (
+                  name,
+                  email,
+                  avatar_url
+                )
+              `)
+              .eq("id", payload.new.id)
+              .single();
 
-          if (error) {
-            console.error("Error fetching new message:", error);
-            return;
+            if (error) {
+              console.error("Error fetching new message:", error);
+              return;
+            }
+
+            if (data) {
+              const newMessage: Message = {
+                ...data,
+                profiles: data.profiles
+              };
+
+              // If the message has a reply_to ID, fetch the replied message's details
+              if (newMessage.reply_to) {
+                const { data: repliedData } = await supabase
+                  .from("messages")
+                  .select(`
+                    id,
+                    text,
+                    profiles (name)
+                  `)
+                  .eq("id", newMessage.reply_to)
+                  .single();
+
+                if (repliedData && repliedData.profiles) {
+                  newMessage.replied_message = {
+                    id: repliedData.id,
+                    text: repliedData.text,
+                    user_name: Array.isArray(repliedData.profiles) && repliedData.profiles.length > 0
+                      ? repliedData.profiles[0].name || "Anonymous"
+                      : "Anonymous",
+                  };
+                }
+              }
+
+              setMessages((prevMessages) => {
+                // Remove any optimistic messages from the current user
+                const withoutOptimistic = prevMessages.filter(
+                  (msg) => !(msg.isOptimistic && msg.user_id === newMessage.user_id)
+                );
+
+                // Check if the real message already exists
+                const exists = withoutOptimistic.some((msg) => msg.id === newMessage.id);
+                if (exists) return prevMessages;
+
+                // Add the new message
+                return [...withoutOptimistic, newMessage];
+              });
+            }
+          } catch (err) {
+            console.error("Error in realtime handler:", err);
           }
+        }
+      )
+      .subscribe();
 
-          if (data) {
-            const newMessage: Message = data as Message;
+    return channel;
+  }, [supabase]);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("messages")
+          .select(`
+            *,
+            profiles (
+              name,
+              email,
+              avatar_url
+            )
+          `)
+          .order("created_at", { ascending: true });
+
+        if (error) {
+          console.error("Error fetching messages:", error);
+          return;
+        }
+
+        if (data) {
+          const messagesWithReplies: Message[] = [];
+          
+          for (const msg of data) {
+            const newMessage: Message = {
+              ...msg,
+              profiles: msg.profiles
+            };
 
             // If the message has a reply_to ID, fetch the replied message's details
             if (newMessage.reply_to) {
               const { data: repliedData } = await supabase
                 .from("messages")
-                .select("text, profiles(name)")
+                .select(`
+                  id,
+                  text,
+                  profiles (name)
+                `)
                 .eq("id", newMessage.reply_to)
                 .single();
 
-              // Fix: Access profiles as an array (Supabase joins return arrays)
               if (repliedData && repliedData.profiles && Array.isArray(repliedData.profiles) && repliedData.profiles.length > 0) {
                 newMessage.replied_message = {
-                  id: newMessage.reply_to,
+                  id: repliedData.id,
                   text: repliedData.text,
                   user_name: repliedData.profiles[0].name || "Anonymous",
                 };
               }
             }
 
-            setMessages((prevMessages) => {
-              // Remove the optimistic message with the same user ID
-              const withoutOptimistic = prevMessages.filter(
-                (msg) => !(msg.isOptimistic && msg.user_id === newMessage.user_id)
-              );
-
-              // Check if the real message already exists to prevent duplicates
-              const exists = withoutOptimistic.some((msg) => msg.id === newMessage.id);
-              if (exists) return prevMessages;
-
-              // Add the new message to the list
-              return [...withoutOptimistic, newMessage];
-            });
+            messagesWithReplies.push(newMessage);
           }
-        } catch (err) {
-          console.error("Error in realtime handler:", err);
+          
+          setMessages(messagesWithReplies);
         }
+      } catch (err) {
+        console.error("Error in fetchMessages:", err);
       }
-    )
-    .subscribe();
-
-  return channel;
-}, [supabase]);
-
-  useEffect(() => {
-   const fetchMessages = async () => {
-  const { data, error } = await supabase
-    .from("messages")
-    .select("*, profiles(name, email, avatar_url)")
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    console.error("Error fetching messages:", error);
-  } else if (data) {
-    const messagesWithReplies: Message[] = [];
-    for (const msg of data) {
-      const newMessage: Message = msg as Message;
-      if (newMessage.reply_to) {
-        const { data: repliedData } = await supabase
-          .from("messages")
-          .select("text, profiles(name)")
-          .eq("id", newMessage.reply_to)
-          .single();
-
-        // Fix: Access profiles as an array (Supabase joins return arrays)
-        if (repliedData && repliedData.profiles && Array.isArray(repliedData.profiles) && repliedData.profiles.length > 0) {
-          newMessage.replied_message = {
-            id: newMessage.reply_to,
-            text: repliedData.text,
-            user_name: repliedData.profiles[0].name || "Anonymous",
-          };
-        }
-      }
-      messagesWithReplies.push(newMessage);
-    }
-    setMessages(messagesWithReplies);
-  }
-};
-      
+    };
 
     const fetchUsers = async () => {
       const { data, error } = await supabase
@@ -267,56 +302,19 @@ export default function ProtectedPage() {
     }
   };
 
-  const handleSubmit = async () => {
-    const text = message.trim();
-    if (!text) return;
+  const extractMentions = (text: string): string[] => {
+    const mentionRegex = /@(\w+)/g;
+    const mentions: string[] = [];
+    let match: RegExpExecArray | null;
 
-    const mentions = extractMentions(text);
-    const optimisticId = uuidv4();
-
-    // Add optimistic message immediately
-    const optimisticMessage: Message = {
-      id: optimisticId,
-      text,
-      created_at: new Date().toISOString(),
-      user_id: user.id,
-      profiles: {
-        name: userName,
-        email: user.email || "",
-        avatar_url: userUrl,
-      },
-      isOptimistic: true,
-      reply_to: replyingTo?.id,
-      replied_message: replyingTo
-        ? {
-            id: replyingTo.id,
-            text: replyingTo.text,
-            user_name: replyingTo.profiles.name || "Anonymous",
-          }
-        : undefined,
-      mentions,
-    };
-
-    // Show message immediately
-    setMessages((prev) => [...prev, optimisticMessage]);
-    setMessage(""); // Clear input immediately
-    setReplyingTo(null); // Clear reply state
-    setShowMentions(false);
-
-    // Send to database (you'll need to update your insertMessage function)
-    const { success, error } = await insertMessage(
-      text,
-      replyingTo?.id,
-      mentions
-    );
-
-    if (!success) {
-      console.error("Failed to send message:", error);
-      // Remove optimistic message on error
-      setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId));
-      setMessage(text); // Restore message to input
-      if (replyingTo) setReplyingTo(replyingTo); // Restore reply state
+    while ((match = mentionRegex.exec(text)) !== null) {
+      const mentionedUser = users.find((u) => u.name === match![1]);
+      if (mentionedUser) {
+        mentions.push(mentionedUser.id);
+      }
     }
+
+    return mentions;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -357,20 +355,57 @@ export default function ProtectedPage() {
     }, 100);
   };
 
-const extractMentions = (text: string): string[] => {
-  const mentionRegex = /@(\w+)/g;
-  const mentions: string[] = []; // Add explicit typing
-  let match: RegExpExecArray | null; // Add explicit typing
+  const handleSubmit = async () => {
+    const text = message.trim();
+    if (!text) return;
 
-  while ((match = mentionRegex.exec(text)) !== null) {
-    const mentionedUser = users.find((u) => u.name === match![1]);
-    if (mentionedUser) {
-      mentions.push(mentionedUser.id);
+    const mentions = extractMentions(text);
+    const optimisticId = Date.now(); // Use timestamp as temporary ID for optimistic update
+
+    // Add optimistic message immediately
+    const optimisticMessage: Message = {
+      id: optimisticId, // Temporary ID
+      text,
+      created_at: new Date().toISOString(),
+      user_id: user.id,
+      profiles: {
+        name: userName,
+        email: user.email || "",
+        avatar_url: userUrl,
+      },
+      isOptimistic: true,
+      reply_to: replyingTo?.id,
+      replied_message: replyingTo
+        ? {
+            id: replyingTo.id,
+            text: replyingTo.text,
+            user_name: replyingTo.profiles.name || "Anonymous",
+          }
+        : undefined,
+      mentions,
+    };
+
+    // Show message immediately
+    setMessages((prev) => [...prev, optimisticMessage]);
+    setMessage(""); // Clear input immediately
+    setReplyingTo(null); // Clear reply state
+    setShowMentions(false);
+
+    // Send to database
+    const { success, error } = await insertMessage(
+      text,
+      replyingTo?.id?.toString(),
+      mentions
+    );
+
+    if (!success) {
+      console.error("Failed to send message:", error);
+      // Remove optimistic message on error
+      setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId));
+      setMessage(text); // Restore message to input
+      if (replyingTo) setReplyingTo(replyingTo); // Restore reply state
     }
-  }
-
-  return mentions;
-};
+  };
 
   const renderMessageText = (text: string) => {
     const mentionRegex = /@(\w+)/g;
