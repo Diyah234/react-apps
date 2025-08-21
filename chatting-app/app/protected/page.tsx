@@ -7,7 +7,9 @@ import { RootState } from "@/lib/redux/store";
 import { useEffect, useState, KeyboardEvent, useRef, useCallback } from "react";
 import { clearUser, setUser } from "@/lib/redux/features/UserSlice";
 import { AiOutlineSend } from "react-icons/ai";
-import { MdOutlineEmojiEmotions } from "react-icons/md";
+import { MdOutlineEmojiEmotions, MdReply } from "react-icons/md";
+import { IoClose } from "react-icons/io5";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import EmojiPicker from 'emoji-picker-react';
 import { insertMessage } from "@/lib/supabase/message";
 import Image from "next/image";
@@ -24,7 +26,21 @@ interface Message {
         email: string;
         avatar_url?: string;
     };
-    isOptimistic?: boolean; // Flag for optimistic messages
+    isOptimistic?: boolean;
+    reply_to?: string;
+    replied_message?: {
+        id: string;
+        text: string;
+        user_name: string;
+    };
+    mentions?: string[]; // Array of user IDs who were mentioned
+}
+
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    avatar_url?: string;
 }
 
 export default function ProtectedPage() {
@@ -36,8 +52,18 @@ export default function ProtectedPage() {
     const [open, setOpen] = useState(false);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
+    const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+    const [users, setUsers] = useState<User[]>([]);
+    const [showMentions, setShowMentions] = useState(false);
+    const [mentionQuery, setMentionQuery] = useState('');
+    const [cursorPosition, setCursorPosition] = useState(0);
+    const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     const channelRef = useRef<RealtimeChannel | null>(null);
     const chatContainerRef = useRef<HTMLDivElement>(null);
+    
+  const darkMode = useSelector((state: RootState) => state.theme.darkmode)
+  
 
     useEffect(() => {
         const checkSession = async () => {
@@ -133,8 +159,21 @@ export default function ProtectedPage() {
             }
         };
 
+        const fetchUsers = async () => {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, name, email, avatar_url');
+            
+            if (error) {
+                console.error("Error fetching users:", error);
+            } else if (data) {
+                setUsers(data as User[]);
+            }
+        };
+
         if (user) {
             fetchMessages();
+            fetchUsers();
             channelRef.current = realTimeSubscription();
         }
         
@@ -167,10 +206,25 @@ export default function ProtectedPage() {
     const userUrl = user.user_metadata?.avatar_url || '';
     const userInitial = userName.charAt(0).toUpperCase();
 
+    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (showMentions) {
+            if (e.key === 'Escape') {
+                setShowMentions(false);
+                return;
+            }
+        }
+        
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
+        }
+    };
+
     const handleSubmit = async () => {
         const text = message.trim();
         if (!text) return;
 
+        const mentions = extractMentions(text);
         const optimisticId = uuidv4();
         
         // Add optimistic message immediately
@@ -184,33 +238,116 @@ export default function ProtectedPage() {
                 email: user.email || '',
                 avatar_url: userUrl
             },
-            isOptimistic: true
+            isOptimistic: true,
+            reply_to: replyingTo?.id,
+            replied_message: replyingTo ? {
+                id: replyingTo.id,
+                text: replyingTo.text,
+                user_name: replyingTo.profiles?.name || 'Anonymous'
+            } : undefined,
+            mentions
         };
 
         // Show message immediately
         setMessages(prev => [...prev, optimisticMessage]);
         setMessage(''); // Clear input immediately
+        setReplyingTo(null); // Clear reply state
+        setShowMentions(false);
 
-        // Send to database
-        const { success, error } = await insertMessage(text);
+        // Send to database (you'll need to update your insertMessage function)
+        const { success, error } = await insertMessage(text, replyingTo?.id, mentions);
         
         if (!success) {
             console.error("Failed to send message:", error);
             // Remove optimistic message on error
             setMessages(prev => prev.filter(msg => msg.id !== optimisticId));
             setMessage(text); // Restore message to input
+            if (replyingTo) setReplyingTo(replyingTo); // Restore reply state
         }
     };
 
-    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSubmit();
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        const cursorPos = e.target.selectionStart || 0;
+        
+        setMessage(value);
+        setCursorPosition(cursorPos);
+        
+        // Check for @ mentions
+        const lastAtIndex = value.lastIndexOf('@', cursorPos - 1);
+        if (lastAtIndex !== -1) {
+            const textAfterAt = value.substring(lastAtIndex + 1, cursorPos);
+            if (!textAfterAt.includes(' ') && textAfterAt.length >= 0) {
+                setMentionQuery(textAfterAt);
+                setShowMentions(true);
+            } else {
+                setShowMentions(false);
+            }
+        } else {
+            setShowMentions(false);
         }
+    };
+
+    const handleMentionSelect = (user: User) => {
+        const lastAtIndex = message.lastIndexOf('@', cursorPosition - 1);
+        const beforeMention = message.substring(0, lastAtIndex);
+        const afterMention = message.substring(cursorPosition);
+        const newMessage = `${beforeMention}@${user.name} ${afterMention}`;
+        
+        setMessage(newMessage);
+        setShowMentions(false);
+        setMentionQuery('');
+        
+        // Focus back to input
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 100);
+    };
+
+    const extractMentions = (text: string): string[] => {
+        const mentionRegex = /@(\w+)/g;
+        const mentions = [];
+        let match;
+        
+        while ((match = mentionRegex.exec(text)) !== null) {
+            const mentionedUser = users.find(u => u.name === match![1]);
+            if (mentionedUser) {
+                mentions.push(mentionedUser.id);
+            }
+        }
+        
+        return mentions;
+    };
+
+    const renderMessageText = (text: string) => {
+        const mentionRegex = /@(\w+)/g;
+        const parts = text.split(mentionRegex);
+        
+        return parts.map((part, index) => {
+            if (index % 2 === 1) { // This is a mention
+                const mentionedUser = users.find(u => u.name === part);
+                const isMentioningCurrentUser = mentionedUser?.id === user.id;
+                
+                return (
+                    <span
+                        key={index}
+                        className={`font-semibold ${
+                            isMentioningCurrentUser 
+                                ? 'bg-yellow-400/20 text-yellow-300 px-1 rounded' 
+                                : 'text-blue-400'
+                        }`}
+                    >
+                        @{part}
+                    </span>
+                );
+            }
+            return part;
+        });
     };
 
     return (
-        <div className="flex flex-col h-[85vh] md:h-[90vh] bg-gray-800 rounded-lg shadow-xl overflow-hidden border border-gray-700">
+        <div className={`flex flex-col h-[85vh] md:h-[90vh] rounded-lg shadow-xl overflow-hidden border transition-colors duration-300
+            ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-200 border-gray-300'}`}>
             <style jsx>{`
                 @keyframes fadeInUp {
                     from {
@@ -259,13 +396,14 @@ export default function ProtectedPage() {
                     
                     const otherUserAvatar = msg.profiles?.avatar_url;
                     const otherUserInitial = msg.profiles?.name?.charAt(0).toUpperCase() || 'A';
+                    const hasMentions = msg.mentions?.includes(user.id);
 
                     return (
                         <div
                             key={msg.id}
-                            className={`flex flex-row gap-2 items-start ${isCurrentUser ? 'justify-end' : 'justify-start'} ${
+                            className={`flex flex-row gap-2 items-start group ${isCurrentUser ? 'justify-end' : 'justify-start'} ${
                                 msg.isOptimistic ? 'opacity-70 animate-pulse' : 'opacity-100'
-                            } animate-fade-in-up transition-all duration-300 ease-in-out`}
+                            } ${hasMentions ? 'bg-yellow-400/5 border-l-4 border-yellow-400 pl-2' : ''} animate-fade-in-up transition-all duration-300 ease-in-out relative`}
                             style={{
                                 animation: msg.isOptimistic ? 'fadeInUp 0.3s ease-out, pulse 2s infinite' : 'fadeInUp 0.3s ease-out'
                             }}
@@ -287,11 +425,19 @@ export default function ProtectedPage() {
                                     )}
                                 </div>
                             )}
-                            <div className={`p-3 rounded-2xl max-w-xs md:max-w-md lg:max-w-lg transform transition-all duration-200 hover:scale-105 ${
+                            <div className={`p-3 rounded-2xl max-w-xs md:max-w-md lg:max-w-lg transform transition-all duration-200 hover:scale-105 relative ${
                                 isCurrentUser 
                                     ? 'bg-blue-600 rounded-tr-none hover:bg-blue-700' 
                                     : 'bg-gray-700 rounded-tl-none hover:bg-gray-600'
                             }`}>
+                                {/* Reply indicator */}
+                                {msg.replied_message && (
+                                    <div className="mb-2 p-2 bg-black/20 rounded border-l-4 border-blue-400">
+                                        <p className="text-xs text-blue-400 font-semibold">{msg.replied_message.user_name}</p>
+                                        <p className="text-xs text-gray-300 truncate">{msg.replied_message.text}</p>
+                                    </div>
+                                )}
+                                
                                 <div className="flex flex-row items-center justify-between gap-4">
                                     <h1 className="text-xs font-semibold text-gray-300">
                                         {isCurrentUser ? 'You' : msg.profiles?.name || 'Anonymous'}
@@ -301,7 +447,35 @@ export default function ProtectedPage() {
                                         {msg.isOptimistic && <span className="ml-1 animate-spin">⏳</span>}
                                     </span>
                                 </div>
-                                <p className="text-white mt-1">{msg.text}</p>
+                                <p className="text-white mt-1">{renderMessageText(msg.text)}</p>
+                                
+                                {/* Mobile-friendly menu button */}
+                                <button
+                                    onClick={() => setSelectedMessageId(selectedMessageId === msg.id ? null : msg.id)}
+                                   className={`absolute -top-2 ${isCurrentUser ? '-left-8' : '-right-8'} p-1.5 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 ${
+                                        selectedMessageId === msg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 md:opacity-0'
+                                    } ${darkMode ? 'bg-gray-600 text-white hover:bg-gray-500' : 'bg-gray-400 text-white hover:bg-gray-500'}`}
+                                >
+                                    <BsThreeDotsVertical className="w-3 h-3" />
+                                </button>
+                                
+                                {/* Action menu */}
+                                {selectedMessageId === msg.id && (
+                                     <div className={`absolute top-8 ${isCurrentUser ? 'left-0' : 'right-0'} border rounded-lg shadow-xl z-10 min-w-32 animate-fade-in-up ${
+                                        darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'
+                                    }`}>
+                                        <button
+                                            onClick={() => {
+                                                setReplyingTo(msg);
+                                                setSelectedMessageId(null);
+                                            }}
+                                            className="w-full px-4 py-2 text-left text-white hover:bg-gray-700 flex items-center gap-2 text-sm"
+                                        >
+                                            <MdReply className="w-4 h-4" />
+                                            Reply
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                             {isCurrentUser && (
                                 <div className="flex-shrink-0">
@@ -325,17 +499,89 @@ export default function ProtectedPage() {
                 })}
             </div>
 
-            <div className="p-4 border-t border-gray-700 bg-gray-800">
+            <div className={`p-4 border-t ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-gray-200'}`}>
+                {/* Reply indicator */}
+                {replyingTo && (
+                    <div className="mb-3 p-3 bg-gray-700 rounded-lg border-l-4 border-blue-500 animate-fade-in-up">
+                        <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                                <p className="text-xs text-blue-400 font-semibold mb-1">
+                                    Replying to {replyingTo.user_id === user.id ? 'yourself' : replyingTo.profiles?.name || 'Anonymous'}
+                                </p>
+                                <p className={`text-sm truncate ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{replyingTo.text}</p>
+                            </div>
+                            <button
+                                onClick={() => setReplyingTo(null)}
+                                className="ml-2 p-1 text-gray-400 hover:text-white transition-colors"
+                            >
+                                <IoClose className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+                
                 <div className="flex flex-row items-center gap-4">
                     <div className="flex-1 relative">
                         <input
+                            ref={inputRef}
                             type="text"
-                            placeholder="Type a message..."
-                            className="w-full pl-4 pr-16 py-3 border border-gray-600 rounded-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-gray-700 text-white placeholder-gray-400 transition-all duration-200"
-                            onChange={(e) => setMessage(e.target.value)}
+                            placeholder={replyingTo ? `Replying to ${replyingTo.profiles?.name || 'Anonymous'}...` : "Type a message..."}
+                           className={`w-full pl-4 pr-16 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200
+                                ${darkMode ? 'border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:border-blue-500' : 'border border-gray-300 bg-white text-gray-800 placeholder-gray-500 focus:border-blue-500'}`
+                            }
+                            onChange={handleInputChange}
                             value={message}
                             onKeyDown={handleKeyDown}
+                            onBlur={() => {
+                                // Delay hiding mentions to allow for click
+                                setTimeout(() => setShowMentions(false), 200);
+                            }}
                         />
+                        
+                        {/* Mention suggestions */}
+                        {showMentions && (
+                            <div className={`absolute bottom-full left-0 right-12 rounded-lg shadow-xl max-h-40 overflow-y-auto mb-2 animate-fade-in-up ${
+                                darkMode ? 'bg-gray-800 border border-gray-600' : 'bg-white border border-gray-300'
+                            }`}>
+                                {users
+                                    .filter(u => 
+                                        u.name.toLowerCase().includes(mentionQuery.toLowerCase()) && 
+                                        u.id !== user.id
+                                    )
+                                    .slice(0, 5)
+                                    .map(u => (
+                                        <button
+                                            key={u.id}
+                                            onClick={() => handleMentionSelect(u)}
+                                            className="w-full px-4 py-2 text-left hover:bg-gray-700 flex items-center gap-3 text-white"
+                                        >
+                                            {u.avatar_url ? (
+                                                <Image
+                                                    src={u.avatar_url}
+                                                    alt={`${u.name} avatar`}
+                                                    width={24}
+                                                    height={24}
+                                                    className="w-6 h-6 rounded-full"
+                                                />
+                                            ) : (
+                                                <div className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
+                                                    {u.name.charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
+                                            <span className="text-sm">{u.name}</span>
+                                        </button>
+                                    ))
+                                }
+                                {users.filter(u => 
+                                    u.name.toLowerCase().includes(mentionQuery.toLowerCase()) && 
+                                    u.id !== user.id
+                                ).length === 0 && (
+                                    <div className="px-4 py-2 text-gray-400 text-sm">
+                                        No users found
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         <button
                             onClick={() => setOpen(prev => !prev)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-2xl text-gray-400 hover:text-blue-500 transition-all duration-200 hover:scale-110 active:scale-95"
