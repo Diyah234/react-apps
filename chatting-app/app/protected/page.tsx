@@ -169,19 +169,40 @@ export default function ProtectedPage() {
 
     return channel;
   }, [supabase]);
+
   useEffect(() => {
     const fetchMessages = async () => {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*, profiles(name, email, avatar_url)")
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        console.error("Error fetching messages:", error);
-      } else if (data) {
-        setMessages(data as Message[]);
-      }
-    };
+        const { data, error } = await supabase
+          .from("messages")
+          .select("*, profiles(name, email, avatar_url)")
+          .order("created_at", { ascending: true });
+    
+        if (error) {
+          console.error("Error fetching messages:", error);
+        } else if (data) {
+          const messagesWithReplies: Message[] = [];
+          for (const msg of data) {
+            const newMessage: Message = msg as Message;
+            if (newMessage.reply_to) {
+              const { data: repliedData, error: repliedError } = await supabase
+                .from("messages")
+                .select("text, profiles(name)")
+                .eq("id", newMessage.reply_to)
+                .single();
+    
+              if (repliedData && repliedData.profiles && repliedData.profiles.length > 0) {
+                newMessage.replied_message = {
+                  id: newMessage.reply_to,
+                  text: repliedData.text,
+                  user_name: repliedData.profiles[0].name || "Anonymous",
+                };
+              }
+            }
+            messagesWithReplies.push(newMessage);
+          }
+          setMessages(messagesWithReplies);
+        }
+      };
 
     const fetchUsers = async () => {
       const { data, error } = await supabase
@@ -270,7 +291,7 @@ export default function ProtectedPage() {
         ? {
             id: replyingTo.id,
             text: replyingTo.text,
-            user_name: replyingTo.profiles?.name || "Anonymous",
+            user_name: replyingTo.profiles.name || "Anonymous",
           }
         : undefined,
       mentions,
@@ -613,43 +634,43 @@ export default function ProtectedPage() {
             {/* Mention suggestions */}
             {showMentions && (
               <div className="absolute bottom-full left-0 right-12 bg-gray-800 border border-gray-600 rounded-lg shadow-xl max-h-40 overflow-y-auto mb-2 animate-fade-in-up">
-                 {users
-        .filter(u =>
-            // Check that u exists and u.name is a non-empty string
-            u && u.name && u.name.toLowerCase().includes(mentionQuery.toLowerCase()) &&
-            u.id !== user.id
-        )
-        .slice(0, 5)
-        .map((u) => (
-            <button
-                key={u.id}
-                onClick={() => handleMentionSelect(u)}
-                className="w-full px-4 py-2 text-left hover:bg-gray-700 flex items-center gap-3 text-white"
-            >
-                {u.avatar_url ? (
-                    <Image
-                        src={u.avatar_url}
-                        alt={`${u.name} avatar`}
-                        width={24}
-                        height={24}
-                        className="w-6 h-6 rounded-full"
-                    />
-                ) : (
-                    <div className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
-                        {u.name.charAt(0).toUpperCase()}
+                {users
+                  .filter(u =>
+                    // Check that u exists and u.name is a non-empty string
+                    u && u.name && u.name.toLowerCase().includes(mentionQuery.toLowerCase()) &&
+                    u.id !== user.id
+                  )
+                  .slice(0, 5)
+                  .map((u) => (
+                    <button
+                      key={u.id}
+                      onClick={() => handleMentionSelect(u)}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-700 flex items-center gap-3 text-white"
+                    >
+                      {u.avatar_url ? (
+                        <Image
+                          src={u.avatar_url}
+                          alt={`${u.name} avatar`}
+                          width={24}
+                          height={24}
+                          className="w-6 h-6 rounded-full"
+                        />
+                      ) : (
+                        <div className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
+                          {u.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="text-sm">{u.name}</span>
+                    </button>
+                  ))}
+                {users.filter(u =>
+                    u && u.name && u.name.toLowerCase().includes(mentionQuery.toLowerCase()) &&
+                    u.id !== user.id
+                  ).length === 0 && (
+                    <div className="px-4 py-2 text-gray-400 text-sm">
+                      No users found
                     </div>
-                )}
-                <span className="text-sm">{u.name}</span>
-            </button>
-        ))}
-    {users.filter(u =>
-        u && u.name && u.name.toLowerCase().includes(mentionQuery.toLowerCase()) &&
-        u.id !== user.id
-    ).length === 0 && (
-        <div className="px-4 py-2 text-gray-400 text-sm">
-            No users found
-        </div>
-    )}
+                  )}
               </div>
             )}
             <button
